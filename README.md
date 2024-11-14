@@ -1,4 +1,4 @@
-# Web Application Framework Firewall Demo
+# Web Application Firewall Demo
 
 ## Project Overview
 This project demonstrates a basic Web Application Firewall (WAF) setup using a Flask-based backend with React for the frontend. The application enables users to simulate good and bad requests via the React interface, which then sends these requests to the server for handling. A middleware-based firewall, written in Python, processes the incoming requests to log and filter them based on defined policies.
