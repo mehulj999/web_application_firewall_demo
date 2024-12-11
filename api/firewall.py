@@ -1,5 +1,5 @@
 from datetime import datetime
-from db import log_request
+from db import requestlogs
 
 class RequestLoggerMiddleware:
     def __init__(self, app):
