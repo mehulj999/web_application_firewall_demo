@@ -1,3 +1,5 @@
+"""Main flask application."""
+
 import sqlite3
 from flask import Flask, request, jsonify
 from db import init_db
