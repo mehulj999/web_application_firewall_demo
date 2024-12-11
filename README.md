@@ -82,7 +82,6 @@ cd web_application_firewall_demo
    ```
 2. Create and activate a virtual environment:
     ```bash
-    Copy code
     python -m venv venv
     source venv/bin/activate   # On Windows, use `venv\Scripts\activate`
     ```
