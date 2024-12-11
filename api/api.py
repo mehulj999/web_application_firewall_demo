@@ -1,4 +1,3 @@
-from datetime import datetime
 import sqlite3
 from flask import Flask, request, jsonify
 from db import init_db
