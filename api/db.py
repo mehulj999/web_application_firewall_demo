@@ -1,34 +1,56 @@
 import sqlite3
-from datetime import datetime
-
-DATABASE = 'requests_log.db'
 
 def init_db():
-    """Initialize the database and create tables if not exist."""
-    with sqlite3.connect(DATABASE) as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS request_log (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                path TEXT NOT NULL,
-                method TEXT NOT NULL,
-                timestamp TEXT NOT NULL
-            )
-        ''')
-        conn.commit()
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
 
-def log_request(path, method):
-    """Log a request to the database."""
-    with sqlite3.connect(DATABASE) as conn:
-        cursor = conn.cursor()
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        cursor.execute('INSERT INTO request_log (path, method, timestamp) VALUES (?, ?, ?)', 
-                       (path, method, timestamp))
-        conn.commit()
+    # Create Users table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+    )
+    """)
 
-def fetch_logs():
-    """Retrieve all logs from the database."""
-    with sqlite3.connect(DATABASE) as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM request_log')
-        return cursor.fetchall()
+    # Create Profiles table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Profiles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        bio TEXT,
+        FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE CASCADE
+    )
+    """)
+
+    # Create Posts table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS Posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE CASCADE
+    )
+    """)
+
+    # Create RequestLogs table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS RequestLogs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        request_url TEXT NOT NULL,
+        request_payload TEXT,
+        request_type TEXT NOT NULL,
+        request_ip TEXT NOT NULL,
+        response_status INTEGER NOT NULL,
+        response_object TEXT,
+        logged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES Users (id)
+    )
+    """)
+
+    conn.commit()
+    conn.close()
