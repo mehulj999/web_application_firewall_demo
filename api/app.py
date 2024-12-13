@@ -172,4 +172,5 @@ def manage_profile(user_id):
 # Initialize database before starting the server
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    app.run(port=8000, debug=True)
+    # app.run(debug=True)
