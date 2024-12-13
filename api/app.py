@@ -1,3 +1,5 @@
+"""Main flask application."""
+
 import sqlite3
 from flask import Flask, request, jsonify
 from db import init_db
@@ -170,4 +172,5 @@ def manage_profile(user_id):
 # Initialize database before starting the server
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    app.run(port=8000, debug=True)
+    # app.run(debug=True)
