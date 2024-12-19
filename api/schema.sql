@@ -44,9 +44,10 @@ CREATE TABLE RequestLogs (
     request_url TEXT NOT NULL,
     request_payload TEXT,
     request_type TEXT NOT NULL,
-    request_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    request_ip TEXT,
-    response_status INTEGER,
+    request_ip TEXT NOT NULL,
+    response_status INTEGER NOT NULL,
     response_object TEXT,
-    FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE SET NULL
+    logged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE CASCADE
 );
+

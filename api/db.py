@@ -13,13 +13,17 @@ def init_db():
     )
     """)
 
-    # Create Profiles table
+    # Create Profile table
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS Profiles (
+    CREATE TABLE IF NOT EXISTS Profile (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         name TEXT NOT NULL,
-        bio TEXT,
+        phone_number TEXT,
+        date_of_birth DATE,
+        address TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE CASCADE
     )
     """)
@@ -32,6 +36,7 @@ def init_db():
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE CASCADE
     )
     """)
@@ -39,16 +44,16 @@ def init_db():
     # Create RequestLogs table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS RequestLogs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        request_url TEXT NOT NULL,
-        request_payload TEXT,
-        request_type TEXT NOT NULL,
-        request_ip TEXT NOT NULL,
-        response_status INTEGER NOT NULL,
-        response_object TEXT,
-        logged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES Users (id)
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    request_url TEXT NOT NULL,
+    request_payload TEXT,
+    request_type TEXT NOT NULL,
+    request_ip TEXT NOT NULL,
+    response_status INTEGER NOT NULL,
+    response_object TEXT,
+    logged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE CASCADE
     )
     """)
 
