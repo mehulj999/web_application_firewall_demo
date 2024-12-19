@@ -135,37 +135,66 @@ def get_user_logs(user_id):
 def manage_profile(user_id):
     conn = db_connection()
     cursor = conn.cursor()
-
+    print("i am here")
     if request.method == 'GET':
-        cursor.execute("SELECT * FROM Profiles WHERE user_id = ?", (user_id,))
+        print("inside get method")
+        cursor.execute("SELECT * FROM Profile WHERE user_id = ?", (user_id,))
         profile = cursor.fetchone()
         if profile:
-            return jsonify(dict(profile))
+            profile_dict = {
+                'id': profile[0],
+                'user_id': profile[1],
+                'name': profile[2],
+                'phone_number': profile[3],
+                'date_of_birth': profile[4],
+                'address': profile[5],
+                'created_at': profile[6],
+                'updated_at': profile[7]
+            }
+            return jsonify(profile_dict)
         else:
             return jsonify({'error': 'Profile not found'}), 404
-
+        
     data = request.json
 
     if request.method == 'POST':
         name = data.get('name')
-        bio = data.get('bio')
+        phone_number = data.get('phone_number')
+        date_of_birth = data.get('date_of_birth')
+        address = data.get('address')
+        
         if not name:
             return jsonify({'error': 'Name is required'}), 400
 
-        cursor.execute("INSERT INTO Profiles (user_id, name, bio) VALUES (?, ?, ?)", (user_id, name, bio))
+        cursor.execute(
+            """
+            INSERT INTO Profile (user_id, name, phone_number, date_of_birth, address)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (user_id, name, phone_number, date_of_birth, address)
+        )
         conn.commit()
         return jsonify({'message': 'Profile created successfully'}), 201
 
     elif request.method == 'PUT':
         name = data.get('name')
-        bio = data.get('bio')
+        phone_number = data.get('phone_number')
+        date_of_birth = data.get('date_of_birth')
+        address = data.get('address')
 
-        cursor.execute("UPDATE Profiles SET name = ?, bio = ? WHERE user_id = ?", (name, bio, user_id))
+        cursor.execute(
+            """
+            UPDATE Profile
+            SET name = ?, phone_number = ?, date_of_birth = ?, address = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ?
+            """,
+            (name, phone_number, date_of_birth, address, user_id)
+        )
         conn.commit()
         return jsonify({'message': 'Profile updated successfully'}), 200
-
+    
     elif request.method == 'DELETE':
-        cursor.execute("DELETE FROM Profiles WHERE user_id = ?", (user_id,))
+        cursor.execute("DELETE FROM Profile WHERE user_id = ?", (user_id,))
         conn.commit()
         return jsonify({'message': 'Profile deleted successfully'}), 200
 
