@@ -138,7 +138,7 @@ def manage_profile(user_id):
     print("i am here")
     if request.method == 'GET':
         print("inside get method")
-        cursor.execute("SELECT * FROM Profile WHERE user_id = ?", (user_id,))
+        cursor.execute("SELECT * FROM Profile WHERE id = ?", (user_id,))
         profile = cursor.fetchone()
         if profile:
             profile_dict = {
@@ -154,7 +154,12 @@ def manage_profile(user_id):
             return jsonify(profile_dict)
         else:
             return jsonify({'error': 'Profile not found'}), 404
-        
+   
+    elif request.method == 'DELETE':
+        cursor.execute("DELETE FROM Profile WHERE user_id = ?", (user_id,))
+        conn.commit()
+        return jsonify({'message': 'Profile deleted successfully'}), 200
+    
     data = request.json
 
     if request.method == 'POST':
@@ -192,11 +197,6 @@ def manage_profile(user_id):
         )
         conn.commit()
         return jsonify({'message': 'Profile updated successfully'}), 200
-    
-    elif request.method == 'DELETE':
-        cursor.execute("DELETE FROM Profile WHERE user_id = ?", (user_id,))
-        conn.commit()
-        return jsonify({'message': 'Profile deleted successfully'}), 200
 
 # Initialize database before starting the server
 if __name__ == '__main__':
