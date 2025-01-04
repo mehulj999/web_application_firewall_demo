@@ -3,10 +3,12 @@
 import sqlite3
 from flask import Flask, request, jsonify
 from db import init_db
+from flask_cors import CORS
 # from firewall import RequestLoggerMiddleware
 
 # Create and configure Flask app
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Apply middleware
 # app.wsgi_app = RequestLoggerMiddleware(app.wsgi_app)
@@ -172,5 +174,6 @@ def manage_profile(user_id):
 # Initialize database before starting the server
 if __name__ == '__main__':
     init_db()
-    app.run(port=8000, debug=True)
+    app.run(port=5000, debug=True)
+    db.connections.close_all()
     # app.run(debug=True)
