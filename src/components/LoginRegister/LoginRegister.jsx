@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './LoginRegister.css';
 import { FaUser, FaLock } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
+import CryptoJS from 'crypto-js';
 
 const LoginRegister = () => {
     const [action, setAction] = useState('');
@@ -31,10 +32,24 @@ const LoginRegister = () => {
         setLoginForm({ ...loginForm, [name]: value });
     };
 
+    const validateEmail = (email) => {
+        const allowedDomains = ['@gmail.com', '@hotmail.com', '@ue-germany.de','@yahoo.com','@live.com'];
+        return allowedDomains.some((domain) => email.endsWith(domain));
+    };
+
     // Handle register submission
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
-
+    
+        // Validate email before proceeding
+        if (!validateEmail(registerForm.email)) {
+            setMessage('Invalid email domain. Please use a valid email.');
+            return;
+        }
+    
+        // Hash the password before sending
+        const hashedPassword = CryptoJS.SHA256(registerForm.password).toString();
+    
         try {
             const response = await fetch('http://127.0.0.1:5000/register', {
                 method: 'POST',
@@ -44,15 +59,14 @@ const LoginRegister = () => {
                 },
                 body: JSON.stringify({
                     email: registerForm.email,
-                    password: registerForm.password,
+                    password: hashedPassword, // Send the hashed password
                 }),
             });
-
+    
             const result = await response.json();
             if (response.ok) {
                 setMessage('User registered successfully');
-                // Clear the form fields
-                setRegisterForm({ email: '', password: '' });
+                setRegisterForm({ email: '', password: '' }); // Clear the form fields
             } else {
                 setMessage(result.error || 'Registration failed');
             }
@@ -61,11 +75,13 @@ const LoginRegister = () => {
             setMessage('An error occurred. Please try again.');
         }
     };
-
-    // Handle login submission
+    
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
-
+    
+        // Hash the password before sending
+        const hashedPassword = CryptoJS.SHA256(loginForm.password).toString();
+    
         try {
             const response = await fetch('http://127.0.0.1:5000/login', {
                 method: 'POST',
@@ -75,15 +91,14 @@ const LoginRegister = () => {
                 },
                 body: JSON.stringify({
                     email: loginForm.email,
-                    password: loginForm.password,
+                    password: hashedPassword, // Send the hashed password
                 }),
             });
-
+    
             const result = await response.json();
             if (response.ok) {
                 setMessage('User logged in successfully');
-                // Clear the form fields
-                setLoginForm({ email: '', password: '' });
+                setLoginForm({ email: '', password: '' }); // Clear the form fields
             } else {
                 setMessage(result.error || 'Login failed');
             }
