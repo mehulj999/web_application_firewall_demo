@@ -175,5 +175,4 @@ def manage_profile(user_id):
 if __name__ == '__main__':
     init_db()
     app.run(port=5000, debug=True)
-    db.connections.close_all()
     # app.run(debug=True)
