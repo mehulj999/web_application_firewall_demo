@@ -1,31 +1,33 @@
-import logo from './logo.svg';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
 import LoginRegister from './components/LoginRegister/LoginRegister';
+import MonitoringPage from './components/MonitoringPage/MonitoringPage'; // New page
 
-function App() {
+const App = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Update the body class based on the current route
+    if (location.pathname === '/') {
+      document.body.className = 'login-register-body';
+    } else if (location.pathname === '/monitoring') {
+      document.body.className = 'monitoring-page-body';
+    }
+  }, [location]);
+
   return (
-    <div>
-      <LoginRegister/>
-
-
-
-
-      {/* <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header> */}
-    </div>
+    <Routes>
+      <Route path="/" element={<LoginRegister />} />
+      <Route path="/monitoring" element={<MonitoringPage />} />
+    </Routes>
   );
-}
+};
 
-export default App;
+const Root = () => (
+  <Router>
+    <App />
+  </Router>
+);
+
+export default Root;

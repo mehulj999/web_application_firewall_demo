@@ -3,8 +3,11 @@ import './LoginRegister.css';
 import { FaUser, FaLock } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import CryptoJS from 'crypto-js';
+import { useNavigate } from 'react-router-dom';
+
 
 const LoginRegister = () => {
+    const navigate = useNavigate(); // Initialize useNavigate
     const [action, setAction] = useState('');
     const [registerForm, setRegisterForm] = useState({
         email: '',
@@ -99,6 +102,7 @@ const LoginRegister = () => {
             if (response.ok) {
                 setMessage('User logged in successfully');
                 setLoginForm({ email: '', password: '' }); // Clear the form fields
+                navigate('/monitoring'); // Navigate to the MonitoringPage
             } else {
                 setMessage(result.error || 'Login failed');
             }

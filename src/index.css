@@ -11,14 +11,14 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  display: flex;
+  /* display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: url('./components/assets/background.jpeg')
+  align-items: center; */
+  /* min-height: 100vh; */
+  /* background: url('./components/assets/background.jpeg')
   no-repeat;
   background-size: cover;
-  background-position: center;
+  background-position: center; */
 }
 
 code {
