@@ -4,9 +4,11 @@ import { FaUser, FaLock } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import CryptoJS from 'crypto-js';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../AuthContext';
 
 
 const LoginRegister = () => {
+    const { login } = useAuth(); // Access login function from AuthContext
     const navigate = useNavigate(); // Initialize useNavigate
     const [action, setAction] = useState('');
     const [registerForm, setRegisterForm] = useState({
@@ -90,7 +92,7 @@ const LoginRegister = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    // 'Accept': 'application/json',
                 },
                 body: JSON.stringify({
                     email: loginForm.email,
@@ -102,7 +104,13 @@ const LoginRegister = () => {
             if (response.ok) {
                 setMessage('User logged in successfully');
                 setLoginForm({ email: '', password: '' }); // Clear the form fields
-                navigate('/monitoring'); // Navigate to the MonitoringPage
+                login(); // Call the login function from AuthContext
+                if (loginForm.email === 'admin@gmail.com' && loginForm.password === 'ttticc') {
+                    navigate('/monitoring'); // Navigate to MonitoringPage
+                } else {
+                    navigate('/main'); // Navigate to MainPage
+                }
+            
             } else {
                 setMessage(result.error || 'Login failed');
             }
