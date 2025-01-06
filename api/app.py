@@ -4,11 +4,16 @@ import sqlite3
 from flask import Flask, request, jsonify
 from db import init_db
 from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
+import datetime
+import os
 # from firewall import RequestLoggerMiddleware
 
 # Create and configure Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+app.config['SECRET_KEY'] = os.urandom(24)
 
 # Apply middleware
 # app.wsgi_app = RequestLoggerMiddleware(app.wsgi_app)
@@ -30,11 +35,13 @@ def register():
 
     if not email or not password:
         return jsonify({'error': 'Email and password are required'}), 400
+    hashed_password = generate_password_hash(password, method='sha256')
+
 
     conn = db_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO Users (email, password) VALUES (?, ?)", (email, password))
+        cursor.execute("INSERT INTO Users (email, password) VALUES (?, ?)", (email, hashed_password))
         conn.commit()
         return jsonify({'message': 'User registered successfully'}), 201
     except sqlite3.IntegrityError:
@@ -52,11 +59,19 @@ def login():
 
     conn = db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Users WHERE email = ? AND password = ?", (email, password))
+    cursor.execute("SELECT * FROM Users WHERE email = ?", (email,))
     user = cursor.fetchone()
 
-    if user:
-        return jsonify({'message': 'Login successful'}), 200
+    if user and check_password_hash(user['password'], password):
+        token = jwt.encode(
+            {
+                'user_id': user['id'],
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+            },
+            app.config['SECRET_KEY'],
+            algorithm='HS256'
+        )
+        return jsonify({'message': 'Login successful', 'token': token}), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
 
