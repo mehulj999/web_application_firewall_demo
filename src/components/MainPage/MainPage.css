@@ -20,3 +20,176 @@ body {
     padding: 0px;
     overflow-y: auto;
 }
+
+
+.CommentArea {
+
+
+    font-family: Arial;
+    text-align: center; /* Center the content */
+    position: relative;
+    height: 100%; /* Set a fixed height for the comment area */
+    align-items: center;
+    width: 100%; /* Ensure the width spans the parent container */
+    box-sizing: border-box; /* Include padding and borders in width */
+  }
+  
+  .comment-list {
+    padding: 0;
+    margin-top: 0;
+    max-height: 600px; /* Set a max height for the comment list */
+    overflow-y: auto; /* Make the comment list scrollable */
+    align-items: center;
+  }
+  
+  .comment-list li {
+    list-style-type: none;
+    display: block;
+    margin: 10px auto; /* Center the item horizontally */
+    width: 80%; /* Set the width to 80% of the parent container */
+    padding: 10px;
+    border: 1px solid #ccc; /* Add border to each comment */
+    border-radius: 10px; /* Round the border of each comment */
+    text-align: center; /* Center the text within each comment */
+    box-sizing: border-box; /* Include padding and border in the element's total width */
+}
+ /* .comment-list li img {
+    width: 70px;
+    display: flex;
+    align-items: center;
+ } */
+
+
+ .comment-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin: 10px auto;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #f9f9f9;
+    width: 80%;
+    box-sizing: border-box;
+    position: relative;
+  }
+  
+  .comment-image {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .comment-image img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .comment-username {
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 5px;
+    text-align: center;
+  }
+  
+  .comment-content {
+    margin-bottom: 40px;
+    overflow: hidden;
+    word-wrap: break-word;
+    text-align: center;
+    font-size: 14px;
+    padding: 20px 10px;
+    width: 100%;
+  }
+  
+  .comment-actions {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .comment-actions .edit-button,
+  .comment-actions .delete-button {
+    padding: 5px 10px;
+    margin-top: 20px;
+    font-size: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+    
+  }
+  
+  .comment-actions .edit-button {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .comment-actions .delete-button {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .comment-actions .edit-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .comment-actions .delete-button:hover {
+    background-color: #b21f2d;
+  }
+  
+  .comment-date {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .comment-form {
+    position: absolute; /* Keep the form positioned at the bottom of the .CommentArea */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #2f4c5c;
+    padding: 10px;
+    box-sizing: border-box; /* Include padding and borders in the total width */
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    display: flex; /* Enable flexbox for alignment */
+    flex-direction: column; /* Stack the input and button vertically */
+    align-items: center; /* Center input and button horizontally */
+    justify-content: center; /* Center input and button vertically within the form */
+    gap: 10px; /* Add space between the input and button */
+}
+  
+  .comment-form input[type="text"] {
+    width: 80%; /* Maintain a large width */
+    padding: 10px;
+    border-radius: 5px; /* Round the input box */
+    border: 1px solid #ccc;
+    box-sizing: border-box; /* Include padding and borders in the total width */
+  }
+  
+  .comment-form button {
+    padding: 10px 20px;
+    border-radius: 5px;
+    width: 80%; /* Match the input width */
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    box-sizing: border-box; /* Include padding and borders in the total width */
+  }
+  
+  .comment-form button:hover {
+    background-color: #0056b3;
+  }

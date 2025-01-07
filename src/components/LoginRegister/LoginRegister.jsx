@@ -105,7 +105,7 @@ const LoginRegister = () => {
                 setMessage('User logged in successfully');
                 setLoginForm({ email: '', password: '' }); // Clear the form fields
                 login(); // Call the login function from AuthContext
-                if (loginForm.email === 'admin@gmail.com' && loginForm.password === 'ttticc') {
+                if (loginForm.email === 'admin@gmail.com') {
                     navigate('/monitoring'); // Navigate to MonitoringPage
                 } else {
                     navigate('/main'); // Navigate to MainPage
