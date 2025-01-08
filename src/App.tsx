@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import LoginRegister from './components/LoginRegister/LoginRegister';
 import MonitoringPage from './components/MonitoringPage/MonitoringPage'; // New page
-import MainPage from './components/MainPage/MainPage'; // Import MainPage
+import MainPage from './components/HomePage/HomePage'; // Import MainPage
 import { AuthProvider } from './components/AuthContext'; // Import AuthProvider
 import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
 
