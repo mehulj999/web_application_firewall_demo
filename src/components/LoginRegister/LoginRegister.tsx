@@ -4,6 +4,9 @@ import { FaUser, FaLock } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import { IoPerson } from "react-icons/io5";
+import { FaPhoneAlt } from "react-icons/fa";
+import { FaRegAddressBook } from "react-icons/fa";
 
 interface FormState {
     email: string;
@@ -101,7 +104,7 @@ const LoginRegister: React.FC = () => {
                 setLoginForm({ email: '', password: '' });
 
                 const is_admin = result.is_admin;
-                window.location.href = '/monitoring';
+                navigate('/monitoring');
 
                 login();
     
@@ -109,6 +112,7 @@ const LoginRegister: React.FC = () => {
                 if (result.is_admin) {
                     navigate('/monitoring'); // Navigate to monitoring page for admin
                 } else {
+                    console.log("go here")
                     navigate('/home'); // Navigate to home page for regular users
                 }
             } else {
@@ -160,7 +164,7 @@ const LoginRegister: React.FC = () => {
                 </form>
                 {message && <p className="message">{message}</p>}
             </div>
-
+{/* Register form */}
             <div className="form-box register">
                 <form onSubmit={handleRegisterSubmit}>
                     <h1>Register</h1>
@@ -173,6 +177,7 @@ const LoginRegister: React.FC = () => {
                             onChange={handleRegisterChange}
                             required
                         />
+                        <IoPerson className="icon"/>
                     </div>
                     <div className="input-box">
                         <input
@@ -183,6 +188,7 @@ const LoginRegister: React.FC = () => {
                             onChange={handleRegisterChange}
                             required
                         />
+                        <FaPhoneAlt className="icon"/>
                     </div>
                     <div className="input-box">
                         <input
@@ -193,6 +199,7 @@ const LoginRegister: React.FC = () => {
                             onChange={handleRegisterChange}
                             required
                         />
+                        {/* <FaRegCalendarAlt className="icon"/> */}
                     </div>
                     <div className="input-box">
                         <input
@@ -203,6 +210,7 @@ const LoginRegister: React.FC = () => {
                             onChange={handleRegisterChange}
                             required
                         />
+                        <FaRegAddressBook className="icon"/>
                     </div>
                     <div className="input-box">
                         <input

@@ -3,6 +3,8 @@ import LoginPage from "./components/LoginRegister/LoginRegister";
 import HomePage from "./components/HomePage/HomePage";
 import MonitoringPage from "./components/MonitoringPage/MonitoringPage";
 import NotFound from "./components/NotFound/NotFound";
+import Settings from "./components/Settings";
+import RulesPage from "./components/Rules";
 
 const Router = () => {
   return (
@@ -12,6 +14,8 @@ const Router = () => {
         <Route path="/home" element={<HomePage />} />
         <Route path="/monitoring" element={<MonitoringPage />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/rules" element={<Settings />} />
       </Routes>
     </BrowserRouter>
   );
