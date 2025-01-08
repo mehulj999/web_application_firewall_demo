@@ -72,6 +72,15 @@ const LoginRegister = () => {
             if (response.ok) {
                 setMessage('User registered successfully');
                 setRegisterForm({ email: '', password: '' }); // Clear the form fields
+                const is_admin = result.is_admin; // Assuming the response contains an is_admin field
+                window.location.href = "/monitoring"; 
+                // // Redirect to MonitoringPage
+                login();
+                //navigate('/monitoring');
+                
+                if (user.is_admin === false) {
+                    navigate('/monitoring');
+                }
             } else {
                 setMessage(result.error || 'Registration failed');
             }

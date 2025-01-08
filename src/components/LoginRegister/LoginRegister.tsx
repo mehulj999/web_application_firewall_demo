@@ -104,16 +104,27 @@ const LoginRegister: React.FC = () => {
             if (response.ok) {
                 setMessage('User logged in successfully');
                 setLoginForm({ email: '', password: '' });
+                const is_admin = result.is_admin; // Assuming the response contains an is_admin field
+                
+                window.location.href = "/monitoring";
+            
                 login();
 
-                if (loginForm.email === 'admin@gmail.com' && loginForm.password === 'ttticc') {
+                if (is_admin === false) {
                     navigate('/monitoring');
-                } else {
-                    navigate('/main');
                 }
-            } else {
-                setMessage(result.error || 'Login failed');
             }
+                
+            //     login();
+
+            //     if (loginForm.email === 'admin@gmail.com' && loginForm.password === 'ttticc') {
+            //         navigate('/monitoring');
+            //     } else {
+            //         navigate('/main');
+            //     }
+            // } else {
+            //     setMessage(result.error || 'Login failed');
+            // }
         } catch (error) {
             console.error('Error during login:', error);
             setMessage('An error occurred. Please try again.');
