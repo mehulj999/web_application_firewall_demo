@@ -105,8 +105,9 @@ const LoginRegister: React.FC = () => {
                 setMessage('User logged in successfully');
                 setLoginForm({ email: '', password: '' });
                 const is_admin = result.is_admin; // Assuming the response contains an is_admin field
+                
                 window.location.href = "/monitoring";
-                navigate('/monitoring');
+            
                 login();
 
                 if (is_admin === false) {

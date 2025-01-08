@@ -7,9 +7,11 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+    console.log('ProtectedRoute');
     const { isAuthenticated } = useAuth(); // Ensure useAuth is properly typed
-
-    return isAuthenticated ? <>{children}</> : <Navigate to="/" />;
+    console.log('isAuthenticated:', isAuthenticated);
+    //return isAuthenticated ? <>{children}</> : <Navigate to="/" />;
+    return <>{children}</>
 };
 
 export default ProtectedRoute;
