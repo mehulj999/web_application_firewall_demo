@@ -1,10 +1,291 @@
-"""Main flask application."""
+from flask import Flask, request, jsonify, session
+from flask_bcrypt import Bcrypt
+from flask_cors import CORS, cross_origin
+from flask_session import Session
+from config import ApplicationConfig
+from models import db, User, Post, Profile, RequestLog
+from flask_migrate import Migrate
 
-import sqlite3
-from flask import Flask, request, jsonify
-from db import init_db
-from flask_cors import CORS
-# from firewall import RequestLoggerMiddleware
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+app = Flask(__name__)
+app.config.from_object(ApplicationConfig)
+
+bcrypt = Bcrypt(app)
+CORS(app, supports_credentials=True)
+server_session = Session(app)
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
+
+
+@app.route("/current_user")
+def get_current_user():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user = User.query.filter_by(id=user_id).first()
+    return jsonify({"id": user.id, "email": user.email})
+
+
+@app.route("/register", methods=["POST"])
+def register_user():
+    email = request.json["email"]
+    password = request.json["password"]
+
+    user_exists = User.query.filter_by(email=email).first() is not None
+
+    if user_exists:
+        return jsonify({"error": "User already exists"}), 409
+
+    hashed_password = bcrypt.generate_password_hash(password)
+    new_user = User(email=email, password=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+
+    session["user_id"] = new_user.id
+
+    return jsonify({"id": new_user.id, "email": new_user.email})
+
+
+@app.route("/login", methods=["POST"])
+def login_user():
+    email = request.json["email"]
+    password = request.json["password"]
+
+    user = User.query.filter_by(email=email).first()
+    
+    if user is None:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    if not bcrypt.check_password_hash(user.password, password):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    session["user_id"] = user.id
+
+    return jsonify({"id": user.id, "email": user.email})
+
+
+@app.route("/logout", methods=["POST"])
+def logout_user():
+    session.pop("user_id")
+    return "200"
+
+
+# Fetch all users
+@app.route("/users", methods=["GET"])
+def get_all_users():
+    users = User.query.all()
+    return jsonify(
+        {
+            "users": [
+                {
+                    "id": user.id,
+                    "email": user.email,
+                    "created_at": user.created_at,
+                    "updated_at": user.updated_at,
+                    "is_admin": user.is_admin
+                }
+                for user in users
+            ]
+        }
+    )
+
+
+# Fetch posts of a specific user
+@app.route("/users/<int:user_id>/posts", methods=["GET"])
+def get_user_posts(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    posts = Post.query.filter_by(user_id=user_id).all()
+    return jsonify(
+        {
+            "posts": [
+                {
+                    "id": post.id,
+                    "title": post.title,
+                    "content": post.content,
+                    "created_at": post.created_at,
+                    "updated_at": post.updated_at
+                }
+                for post in posts
+            ]
+        }
+    )
+
+
+# Create a post for a specific user
+@app.route("/users/<int:user_id>/posts", methods=["POST"])
+def create_post(user_id):
+    data = request.json
+    title = data.get("title")
+    content = data.get("content")
+
+    if not title or not content:
+        return jsonify({"error": "Title and content are required"}), 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    new_post = Post(user_id=user_id, title=title, content=content)
+    db.session.add(new_post)
+    db.session.commit()
+    return (
+        jsonify({"message": "Post created successfully", "post_id": new_post.id}),
+        201,
+    )
+
+
+# Manage request logs
+@app.route("/logs", methods=["GET", "POST"])
+def manage_logs():
+    if request.method == "GET":
+        logs = RequestLog.query.all()
+        return jsonify(
+            {
+                "logs": [
+                    {
+                        "id": log.id,
+                        "user_id": log.user_id,
+                        "request_url": log.request_url,
+                        "request_type": log.request_type,
+                        "request_time": log.request_time,
+                        "response_status": log.response_status,
+                    }
+                    for log in logs
+                ]
+            }
+        )
+
+    elif request.method == "POST":
+        data = request.json
+        user_id = data.get("user_id")
+        request_url = data.get("request_url")
+        request_payload = data.get("request_payload")
+        request_type = data.get("request_type")
+        request_ip = data.get("request_ip")
+        response_status = data.get("response_status")
+        response_object = data.get("response_object")
+
+        new_log = RequestLog(
+            user_id=user_id,
+            request_url=request_url,
+            request_payload=request_payload,
+            request_type=request_type,
+            request_ip=request_ip,
+            response_status=response_status,
+            response_object=response_object,
+        )
+        db.session.add(new_log)
+        db.session.commit()
+        return jsonify({"message": "Log entry created", "log_id": new_log.id}), 201
+
+
+# Fetch logs of a specific user
+@app.route("/users/<int:user_id>/logs", methods=["GET"])
+def get_user_logs(user_id):
+    logs = RequestLog.query.filter_by(user_id=user_id).all()
+    return jsonify(
+        {
+            "logs": [
+                {
+                    "id": log.id,
+                    "request_url": log.request_url,
+                    "request_type": log.request_type,
+                    "request_time": log.request_time,
+                    "response_status": log.response_status,
+                }
+                for log in logs
+            ]
+        }
+    )
+
+
+# Fetch and manage profile of a specific user
+@app.route("/users/<int:user_id>/profile", methods=["GET", "POST", "PUT", "DELETE"])
+def manage_profile(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    if request.method == "GET":
+        profile = Profile.query.filter_by(user_id=user_id).first()
+        if not profile:
+            return jsonify({"error": "Profile not found"}), 404
+        return jsonify(
+            {
+                "id": profile.id,
+                "name": profile.name,
+                "phone_number": profile.phone_number,
+                "date_of_birth": profile.date_of_birth,
+                "address": profile.address,
+                "created_at": profile.created_at,
+                "updated_at": profile.updated_at,
+            }
+        )
+
+    data = request.json
+
+    if request.method == "POST":
+        name = data.get("name")
+        phone_number = data.get("phone_number")
+        date_of_birth = data.get("date_of_birth")
+        address = data.get("address")
+
+        if not name:
+            return jsonify({"error": "Name is required"}), 400
+
+        new_profile = Profile(
+            user_id=user_id,
+            name=name,
+            phone_number=phone_number,
+            date_of_birth=date_of_birth,
+            address=address,
+        )
+        db.session.add(new_profile)
+        db.session.commit()
+        return (
+            jsonify(
+                {
+                    "message": "Profile created successfully",
+                    "profile_id": new_profile.id,
+                }
+            ),
+            201,
+        )
+
+    elif request.method == "PUT":
+        profile = Profile.query.filter_by(user_id=user_id).first()
+        if not profile:
+            return jsonify({"error": "Profile not found"}), 404
+
+        profile.name = data.get("name", profile.name)
+        profile.phone_number = data.get("phone_number", profile.phone_number)
+        profile.date_of_birth = data.get("date_of_birth", profile.date_of_birth)
+        profile.address = data.get("address", profile.address)
+        db.session.commit()
+        return jsonify({"message": "Profile updated successfully"}), 200
+
+    elif request.method == "DELETE":
+        profile = Profile.query.filter_by(user_id=user_id).first()
+        if not profile:
+            return jsonify({"error": "Profile not found"}), 404
+
+        db.session.delete(profile)
+        db.session.commit()
+        return jsonify({"message": "Profile deleted successfully"}), 200
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 # Create and configure Flask app
 app = Flask(__name__)
@@ -12,167 +293,3 @@ CORS(app)  # Enable CORS for all routes
 
 # Apply middleware
 # app.wsgi_app = RequestLoggerMiddleware(app.wsgi_app)
-
-# Database connection helper
-def db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
-
-# Routes
-
-# Register a new user
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
-
-    if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
-
-    conn = db_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("INSERT INTO Users (email, password) VALUES (?, ?)", (email, password))
-        conn.commit()
-        return jsonify({'message': 'User registered successfully'}), 201
-    except sqlite3.IntegrityError:
-        return jsonify({'error': 'Email already exists'}), 400
-
-# Login an existing user
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
-
-    if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
-
-    conn = db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Users WHERE email = ? AND password = ?", (email, password))
-    user = cursor.fetchone()
-
-    if user:
-        return jsonify({'message': 'Login successful'}), 200
-    else:
-        return jsonify({'error': 'Invalid credentials'}), 401
-
-# Fetch all users
-@app.route('/users', methods=['GET'])
-def get_all_users():
-    conn = db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Users")
-    users = cursor.fetchall()
-    return jsonify({'users': [dict(row) for row in users]})
-
-# Fetch posts of a specific user
-@app.route('/users/<int:user_id>/posts', methods=['GET'])
-def get_user_posts(user_id):
-    conn = db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Posts WHERE user_id = ?", (user_id,))
-    posts = cursor.fetchall()
-    return jsonify({'posts': [dict(row) for row in posts]})
-
-# Create a post for a specific user
-@app.route('/users/<int:user_id>/posts', methods=['POST'])
-def create_post(user_id):
-    data = request.json
-    title = data.get('title')
-    content = data.get('content')
-
-    if not title or not content:
-        return jsonify({'error': 'Title and content are required'}), 400
-
-    conn = db_connection()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO Posts (user_id, title, content) VALUES (?, ?, ?)", (user_id, title, content))
-    conn.commit()
-    return jsonify({'message': 'Post created successfully'}), 201
-
-# Manage request logs
-@app.route('/logs', methods=['GET', 'POST'])
-def manage_logs():
-    conn = db_connection()
-    cursor = conn.cursor()
-
-    if request.method == 'GET':
-        cursor.execute("SELECT * FROM RequestLogs")
-        logs = cursor.fetchall()
-        return jsonify({'logs': [dict(row) for row in logs]})
-
-    elif request.method == 'POST':
-        data = request.json
-        user_id = data.get('user_id')
-        request_url = data.get('request_url')
-        request_payload = data.get('request_payload')
-        request_type = data.get('request_type')
-        request_ip = data.get('request_ip')
-        response_status = data.get('response_status')
-        response_object = data.get('response_object')
-
-        cursor.execute("""
-            INSERT INTO RequestLogs 
-            (user_id, request_url, request_payload, request_type, request_ip, response_status, response_object)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (user_id, request_url, request_payload, request_type, request_ip, response_status, response_object))
-        conn.commit()
-        return jsonify({'message': 'Log entry created'}), 201
-
-# Fetch logs of a specific user
-@app.route('/users/<int:user_id>/logs', methods=['GET'])
-def get_user_logs(user_id):
-    conn = db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM RequestLogs WHERE user_id = ?", (user_id,))
-    logs = cursor.fetchall()
-    return jsonify({'logs': [dict(row) for row in logs]})
-
-# Fetch profile of a specific user
-@app.route('/users/<int:user_id>/profile', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def manage_profile(user_id):
-    conn = db_connection()
-    cursor = conn.cursor()
-
-    if request.method == 'GET':
-        cursor.execute("SELECT * FROM Profiles WHERE user_id = ?", (user_id,))
-        profile = cursor.fetchone()
-        if profile:
-            return jsonify(dict(profile))
-        else:
-            return jsonify({'error': 'Profile not found'}), 404
-
-    data = request.json
-
-    if request.method == 'POST':
-        name = data.get('name')
-        bio = data.get('bio')
-        if not name:
-            return jsonify({'error': 'Name is required'}), 400
-
-        cursor.execute("INSERT INTO Profiles (user_id, name, bio) VALUES (?, ?, ?)", (user_id, name, bio))
-        conn.commit()
-        return jsonify({'message': 'Profile created successfully'}), 201
-
-    elif request.method == 'PUT':
-        name = data.get('name')
-        bio = data.get('bio')
-
-        cursor.execute("UPDATE Profiles SET name = ?, bio = ? WHERE user_id = ?", (name, bio, user_id))
-        conn.commit()
-        return jsonify({'message': 'Profile updated successfully'}), 200
-
-    elif request.method == 'DELETE':
-        cursor.execute("DELETE FROM Profiles WHERE user_id = ?", (user_id,))
-        conn.commit()
-        return jsonify({'message': 'Profile deleted successfully'}), 200
-
-# Initialize database before starting the server
-if __name__ == '__main__':
-    init_db()
-    app.run(port=5000, debug=True)
-    # app.run(debug=True)

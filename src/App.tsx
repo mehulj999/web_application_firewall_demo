@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import './App.css';
 import LoginRegister from './components/LoginRegister/LoginRegister';
 import MonitoringPage from './components/MonitoringPage/MonitoringPage'; // New page
 import MainPage from './components/MainPage/MainPage'; // Import MainPage
