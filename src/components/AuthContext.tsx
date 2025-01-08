@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useState } from 'react';
 
 // Define the shape of the AuthContext
 interface AuthContextType {
@@ -12,15 +12,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // AuthProvider Component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const [isAuthenticated, setIsAuthenticated] = useState(false); // Use state to track authentication
+
     const login = () => {
         console.log('User logged in');
+        setIsAuthenticated(true); // Update state
     };
 
     const logout = () => {
         console.log('User logged out');
+        setIsAuthenticated(false); // Update state
     };
-
-    const isAuthenticated = false; // Example, replace with real logic
 
     return (
         <AuthContext.Provider value={{ login, logout, isAuthenticated }}>

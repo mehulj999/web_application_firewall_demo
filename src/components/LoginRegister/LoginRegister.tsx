@@ -76,18 +76,7 @@ const LoginRegister: React.FC = () => {
     // Handle login submission
     const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        // const hashPassword = async (password: string) => {
-        //     const encoder = new TextEncoder();
-        //     const data = encoder.encode(password);
-        //     const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
-        //     const hashArray = Array.from(new Uint8Array(hashBuffer));
-        //     const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, '0')).join('');
-        //     return hashHex;
-        // };
-        
-        // const hashedPassword = await hashPassword(loginForm.password);
-
+    
         try {
             const response = await fetch('http://127.0.0.1:5000/login', {
                 method: 'POST',
@@ -99,37 +88,31 @@ const LoginRegister: React.FC = () => {
                     password: loginForm.password,
                 }),
             });
-
+    
             const result = await response.json();
+    
             if (response.ok) {
                 setMessage('User logged in successfully');
                 setLoginForm({ email: '', password: '' });
-                const is_admin = result.is_admin; // Assuming the response contains an is_admin field
-                
-                window.location.href = "/monitoring";
-            
+    
+                // Update authentication state
                 login();
-
-                if (is_admin === false) {
-                    navigate('/monitoring');
+    
+                // Redirect based on user role
+                if (result.is_admin) {
+                    navigate('/monitoring'); // Navigate to monitoring page for admin
+                } else {
+                    navigate('/home'); // Navigate to home page for regular users
                 }
+            } else {
+                setMessage(result.error || 'Login failed');
             }
-                
-            //     login();
-
-            //     if (loginForm.email === 'admin@gmail.com' && loginForm.password === 'ttticc') {
-            //         navigate('/monitoring');
-            //     } else {
-            //         navigate('/main');
-            //     }
-            // } else {
-            //     setMessage(result.error || 'Login failed');
-            // }
         } catch (error) {
             console.error('Error during login:', error);
             setMessage('An error occurred. Please try again.');
         }
     };
+    
 
     return (
         <div className={`wrapper${action}`}>
