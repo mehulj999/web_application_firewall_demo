@@ -68,6 +68,9 @@ def login_user():
 
     session["user_id"] = user.id
 
+    if user.is_admin:
+        return jsonify({"id": user.id, "email": user.email, "is_admin": True})
+    
     return jsonify({"id": user.id, "email": user.email})
 
 
