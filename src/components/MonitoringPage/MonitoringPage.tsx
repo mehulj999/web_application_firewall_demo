@@ -19,7 +19,7 @@ const MonitoringPage: React.FC = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch('http://localhost:5000/logs');
+        const response = await fetch('/logs');
         if (!response.ok) throw new Error('Failed to fetch logs');
         const data = await response.json();
         setLogs(data.logs);
