@@ -8,27 +8,35 @@ import { useAuth } from '../AuthContext';
 interface FormState {
     email: string;
     password: string;
+    full_name?: string;
+    phone_number?: string;
+    date_of_birth?: string;
+    address?: string;
 }
 
 const LoginRegister: React.FC = () => {
     const { login } = useAuth();
-    const navigate = useNavigate(); // Initialize useNavigate
+    const navigate = useNavigate();
     const [action, setAction] = useState<string>('');
-    const [registerForm, setRegisterForm] = useState<FormState>({ email: '', password: '' });
+    const [registerForm, setRegisterForm] = useState<FormState>({
+        email: '',
+        password: '',
+        full_name: '',
+        phone_number: '',
+        date_of_birth: '',
+        address: '',
+    });
     const [loginForm, setLoginForm] = useState<FormState>({ email: '', password: '' });
     const [message, setMessage] = useState<string>('');
 
-    // Toggle between login and register views
     const registerLink = () => setAction(' active');
     const loginLink = () => setAction('');
 
-    // Handle input changes for the register form
     const handleRegisterChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setRegisterForm((prev) => ({ ...prev, [name]: value }));
     };
 
-    // Handle input changes for the login form
     const handleLoginChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setLoginForm((prev) => ({ ...prev, [name]: value }));
@@ -39,7 +47,6 @@ const LoginRegister: React.FC = () => {
         return allowedDomains.some((domain) => email.endsWith(domain));
     };
 
-    // Handle register submission
     const handleRegisterSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -51,19 +58,21 @@ const LoginRegister: React.FC = () => {
         try {
             const response = await fetch('http://127.0.0.1:5000/register', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: registerForm.email,
-                    password: registerForm.password,
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(registerForm),
             });
 
             const result = await response.json();
             if (response.ok) {
                 setMessage('User registered successfully');
-                setRegisterForm({ email: '', password: '' });
+                setRegisterForm({
+                    email: '',
+                    password: '',
+                    full_name: '',
+                    phone_number: '',
+                    date_of_birth: '',
+                    address: '',
+                });
             } else {
                 setMessage(result.error || 'Registration failed');
             }
@@ -73,16 +82,12 @@ const LoginRegister: React.FC = () => {
         }
     };
 
-    // Handle login submission
     const handleLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-    
         try {
             const response = await fetch('http://127.0.0.1:5000/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: loginForm.email,
                     password: loginForm.password,
@@ -94,8 +99,10 @@ const LoginRegister: React.FC = () => {
             if (response.ok) {
                 setMessage('User logged in successfully');
                 setLoginForm({ email: '', password: '' });
-    
-                // Update authentication state
+
+                const is_admin = result.is_admin;
+                window.location.href = '/monitoring';
+
                 login();
     
                 // Redirect based on user role
@@ -116,7 +123,6 @@ const LoginRegister: React.FC = () => {
 
     return (
         <div className={`wrapper${action}`}>
-            {/* Login Form */}
             <div className="form-box login">
                 <form onSubmit={handleLoginSubmit}>
                     <h1>Login</h1>
@@ -142,12 +148,6 @@ const LoginRegister: React.FC = () => {
                         />
                         <FaLock className="icon" />
                     </div>
-                    <div className="remember-forgot">
-                        <label>
-                            <input type="checkbox" />
-                            Remember me
-                        </label>
-                    </div>
                     <button type="submit">Login</button>
                     <div className="register-link">
                         <p>
@@ -161,10 +161,49 @@ const LoginRegister: React.FC = () => {
                 {message && <p className="message">{message}</p>}
             </div>
 
-            {/* Register Form */}
             <div className="form-box register">
                 <form onSubmit={handleRegisterSubmit}>
                     <h1>Register</h1>
+                    <div className="input-box">
+                        <input
+                            type="text"
+                            placeholder="Full Name"
+                            name="full_name"
+                            value={registerForm.full_name}
+                            onChange={handleRegisterChange}
+                            required
+                        />
+                    </div>
+                    <div className="input-box">
+                        <input
+                            type="text"
+                            placeholder="Phone Number"
+                            name="phone_number"
+                            value={registerForm.phone_number}
+                            onChange={handleRegisterChange}
+                            required
+                        />
+                    </div>
+                    <div className="input-box">
+                        <input
+                            type="date"
+                            placeholder="Date of Birth"
+                            name="date_of_birth"
+                            value={registerForm.date_of_birth}
+                            onChange={handleRegisterChange}
+                            required
+                        />
+                    </div>
+                    <div className="input-box">
+                        <input
+                            type="text"
+                            placeholder="Address"
+                            name="address"
+                            value={registerForm.address}
+                            onChange={handleRegisterChange}
+                            required
+                        />
+                    </div>
                     <div className="input-box">
                         <input
                             type="email"
