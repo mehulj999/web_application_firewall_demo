@@ -21,18 +21,21 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+# Log requests and responses
+def log_request(user_id, request_url, request_payload, request_type, request_ip, response_status, response_object):
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO RequestLogs 
+        (user_id, request_url, request_payload, request_type, request_ip, response_status, response_object)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (user_id, request_url, str(request_payload), request_type, request_ip, response_status, str(response_object)))
+    conn.commit()
+    conn.close()
 
-@app.route("/current_user")
-def get_current_user():
-    user_id = session.get("user_id")
+# Routes
 
-    if not user_id:
-        return jsonify({"error": "Unauthorized"}), 401
-
-    user = User.query.filter_by(id=user_id).first()
-    return jsonify({"id": user.id, "email": user.email})
-
-
+# Register a new user
 @app.route("/register", methods=["POST"])
 def register_user():
     email = request.json["email"]
@@ -47,19 +50,31 @@ def register_user():
     new_user = User(email=email, password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
-
+    
     session["user_id"] = new_user.id
 
     return jsonify({"id": new_user.id, "email": new_user.email})
 
+@app.route("/current_user")
+def get_current_user():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user = User.query.filter_by(id=user_id).first()
+    return jsonify({"id": user.id, "email": user.email})
 
 @app.route("/login", methods=["POST"])
 def login_user():
     email = request.json["email"]
     password = request.json["password"]
+    client_ip = request.remote_addr
 
     user = User.query.filter_by(email=email).first()
     
+    # Log the request
+    log_request(None, request.path, data, 'POST', client_ip, 400, response)
     if user is None:
         return jsonify({"error": "Unauthorized"}), 401
 
@@ -75,7 +90,6 @@ def login_user():
 def logout_user():
     session.pop("user_id")
     return "200"
-
 
 # Fetch all users
 @app.route("/users", methods=["GET"])
@@ -142,7 +156,6 @@ def create_post(user_id):
         jsonify({"message": "Post created successfully", "post_id": new_post.id}),
         201,
     )
-
 
 # Manage request logs
 @app.route("/logs", methods=["GET", "POST"])

@@ -5,6 +5,7 @@ import MonitoringPage from './components/MonitoringPage/MonitoringPage'; // New 
 import MainPage from './components/MainPage/MainPage'; // Import MainPage
 import { AuthProvider } from './components/AuthContext'; // Import AuthProvider
 import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
+
 const App = () => {
   const location = useLocation();
 
