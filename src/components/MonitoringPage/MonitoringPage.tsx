@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './MonitoringPage.css';
-import SideBar from '../global/SideBar';
+import SideBar from '../SideBar/SideBar';
+
 
 interface Log {
   timestamp: string;
@@ -31,7 +32,7 @@ const MonitoringPage: React.FC = () => {
 
   return (
     <div className="monitoring-main">
-      <SideBar className="monitoring-sidebar" />
+      <SideBar/>
       <div className="content">
         <div className="header">
           <div className="title">WAF Dashboard</div>

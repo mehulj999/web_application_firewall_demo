@@ -1,6 +1,6 @@
 import React from 'react';
 import './MonitoringPage.css';
-import SideBar from '../global/SideBar';
+import SideBar from '../SideBar/SideBar';
 
 const MonitoringPage = () => {
   return (

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import SideBar from '../global/SideBar';
+import SideBar from '../SideBar/SideBar';
 import './MainPage.css';
 import PropTypes from 'prop-types';
 
