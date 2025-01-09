@@ -33,7 +33,7 @@ class Post(db.Model):
 
 # Profile model
 class Profile(db.Model):
-    __tablename__ = "Profile"
+    __tablename__ = "Profiles"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey("Users.id", ondelete="CASCADE"), unique=True, nullable=False)
     name = db.Column(db.String(255), nullable=False)
