@@ -6,6 +6,8 @@ import { LuFileSpreadsheet } from "react-icons/lu";
 import { IoSettingsSharp } from "react-icons/io5";
 import { HiAdjustmentsVertical } from "react-icons/hi2";
 import { FaFireAlt } from "react-icons/fa";
+import { RiLogoutBoxLine } from "react-icons/ri";
+import { Link } from 'react-router-dom';
 
 interface SideBarProps {
   children?: ReactNode; // Defines the optional children prop
@@ -33,24 +35,24 @@ const SideBar: React.FC<SideBarProps> = ({ children }) => {
         <div className="menu-bar">
           <div className="menu">
             <ul className="menu-links">
+            <li className="nav-link">
+              <Link to="/home">
+                <LuFileSpreadsheet className="icon" />
+                <span className="text nav-text">Posts</span>
+              </Link>
+            </li>
               <li className="nav-link">
-                <a href="#">
-                  <LuFileSpreadsheet className="icon" />
-                  <span className="text nav-text">Posts</span>
-                </a>
-              </li>
-              <li className="nav-link">
-                <a href="#">
+              <Link to="/settings">
                   <IoSettingsSharp className="icon" />
                   <span className="text nav-text">Settings</span>
-                </a>
+              </Link>
               </li>
 
               <li className="nav-link">
-                <a href="#">
-                  <HiAdjustmentsVertical className="icon" />
+                <Link to="/rules">
+                  <IoSettingsSharp className="icon" />
                   <span className="text nav-text">Rules</span>
-                </a>
+                </Link>
               </li>
               <li className="nav-link">
                 <a href="#">

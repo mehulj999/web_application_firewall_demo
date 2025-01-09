@@ -72,6 +72,7 @@ class CommentArea extends Component<CommentAreaProps, CommentAreaState> {
       }
     }
   };
+
   render() {
     return (
       <div className="CommentArea" style={{ position: 'relative' }}>
@@ -112,6 +113,7 @@ class CommentArea extends Component<CommentAreaProps, CommentAreaState> {
     );
   }
 }
+
 
 const HomePage: React.FC = () => {
   const { user, loading } = useAuth();

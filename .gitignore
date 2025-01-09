@@ -23,5 +23,7 @@ __pycache__
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-/api/instance
+
+#db
+/api/instance/db.sqlite
 dump.rdb

@@ -4,10 +4,16 @@ import { FaUser, FaLock } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
+import { IoPerson } from "react-icons/io5";
+import { FaPhoneAlt, FaRegAddressBook } from "react-icons/fa";
 
 interface FormState {
   email: string;
   password: string;
+  full_name?: string;
+  phone_number?: string;
+  date_of_birth?: string;
+  address?: string;
 }
 
 const LoginRegister: React.FC = () => {
@@ -15,7 +21,14 @@ const LoginRegister: React.FC = () => {
   const navigate = useNavigate();
 
   const [action, setAction] = useState<string>(''); // Default to login view
-  const [registerForm, setRegisterForm] = useState<FormState>({ email: '', password: '' });
+  const [registerForm, setRegisterForm] = useState<FormState>({
+        email: '',
+        password: '',
+        full_name: '',
+        phone_number: '',
+        date_of_birth: '',
+        address: '',
+    });
   const [loginForm, setLoginForm] = useState<FormState>({ email: '', password: '' });
   const [message, setMessage] = useState<string>('');
 
@@ -65,7 +78,14 @@ const LoginRegister: React.FC = () => {
       if (response.ok) {
         setUser(result); // Update AuthContext with registered user
         setMessage('User registered successfully');
-        setRegisterForm({ email: '', password: '' });
+        setRegisterForm({
+                    email: '',
+                    password: '',
+                    full_name: '',
+                    phone_number: '',
+                    date_of_birth: '',
+                    address: '',
+                });
         setAction(''); // Switch to login form
       } else {
         setMessage(result.error || 'Registration failed');
@@ -149,36 +169,82 @@ const LoginRegister: React.FC = () => {
       <div className="form-box register">
         <form onSubmit={handleRegisterSubmit}>
           <h1>Register</h1>
-          <div className="input-box">
-            <input
-              type="email"
-              placeholder="Email"
-              name="email"
-              value={registerForm.email}
-              onChange={handleRegisterChange}
-              required
-            />
-            <MdEmail className="icon" />
-          </div>
-          <div className="input-box">
-            <input
-              type="password"
-              placeholder="Password"
-              name="password"
-              value={registerForm.password}
-              onChange={handleRegisterChange}
-              required
-            />
-            <FaLock className="icon" />
-          </div>
-          <button type="submit">Register</button>
-          <p>
-            Already have an account?{' '}
-            <a href="#" onClick={loginLink}>
-              Login
-            </a>
-          </p>
-        </form>
+                    <div className="input-box">
+                        <input
+                            type="text"
+                            placeholder="Full Name"
+                            name="full_name"
+                            value={registerForm.full_name}
+                            onChange={handleRegisterChange}
+                            required
+                        />
+                        <IoPerson className="icon"/>
+                    </div>
+                    <div className="input-box">
+                        <input
+                            type="text"
+                            placeholder="Phone Number"
+                            name="phone_number"
+                            value={registerForm.phone_number}
+                            onChange={handleRegisterChange}
+                            required
+                        />
+                        <FaPhoneAlt className="icon"/>
+                    </div>
+                    <div className="input-box">
+                        <input
+                            type="date"
+                            placeholder="Date of Birth"
+                            name="date_of_birth"
+                            value={registerForm.date_of_birth}
+                            onChange={handleRegisterChange}
+                            required
+                        />
+                        {/* <FaRegCalendarAlt className="icon"/> */}
+                    </div>
+                    <div className="input-box">
+                        <input
+                            type="text"
+                            placeholder="Address"
+                            name="address"
+                            value={registerForm.address}
+                            onChange={handleRegisterChange}
+                            required
+                        />
+                        <FaRegAddressBook className="icon"/>
+                    </div>
+                    <div className="input-box">
+                        <input
+                            type="email"
+                            placeholder="Email"
+                            name="email"
+                            value={registerForm.email}
+                            onChange={handleRegisterChange}
+                            required
+                        />
+                        <MdEmail className="icon" />
+                    </div>
+                    <div className="input-box">
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            name="password"
+                            value={registerForm.password}
+                            onChange={handleRegisterChange}
+                            required
+                        />
+                        <FaLock className="icon" />
+                    </div>
+                    <button type="submit">Register</button>
+                    <div className="register-link">
+                        <p>
+                            Already have an account?{' '}
+                            <a href="#" onClick={loginLink}>
+                                Login
+                            </a>
+                        </p>
+                    </div>
+                </form>
       </div>
     </div>
   );
