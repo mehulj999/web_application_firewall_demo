@@ -232,6 +232,23 @@ def create_post(user_id):
     db.session.commit()
     return jsonify({"message": "Post created successfully", "post_id": new_post.id})
 
+@app.route("/users/<int:user_id>/weak_posts", methods=["POST"])
+@login_required
+def create_weak_post(user_id):
+    title = request.json.get("title")
+    content = request.json.get("content")
+
+    if not title or not content:
+        return jsonify({"error": "Title and content are required"}), 400
+
+    # Vulnerable raw SQL query
+    query = text(f"INSERT INTO Posts (user_id, title, content) VALUES ({user_id}, '{title}', '{content}')")
+    db.session.execute(query)
+    db.session.commit()
+
+    return jsonify({"message": "Post created successfully"})
+
+
 @app.route("/users/<int:user_id>/posts/<int:post_id>", methods=["PUT"])
 @login_required  # Protected route
 def edit_post(user_id, post_id):
