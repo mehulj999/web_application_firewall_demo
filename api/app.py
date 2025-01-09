@@ -177,13 +177,14 @@ def get_all_users():
 
 
 @app.route("/posts", methods=["GET"])
-@login_required  # Protected route
+#@login_required  # Protected route
 def get_all_posts():
     posts = Post.query.all()
     return jsonify(
         [
             {
                 "id": post.id,
+                "user_id": post.user_id,
                 "title": post.title,
                 "content": post.content,
                 "created_at": post.created_at,
@@ -192,6 +193,41 @@ def get_all_posts():
             for post in posts
         ]
     )
+    
+@app.route("/posts/<int:post_id>", methods=["PUT"])
+@login_required
+def update_post(post_id):
+    user_id = session.get("user_id")
+    post = Post.query.get(post_id)
+
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
+
+    if post.user_id != user_id:
+        return jsonify({"error": "You are not authorized to edit this post"}), 403
+
+    data = request.json
+    post.content = data.get("content", post.content)
+    db.session.commit()
+
+    return jsonify({"message": "Post updated successfully", "post_id": post.id})
+
+@app.route("/posts/<int:post_id>", methods=["DELETE"])
+@login_required
+def delete_user_post(post_id):
+    user_id = session.get("user_id")
+    post = Post.query.get(post_id)
+
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
+
+    if post.user_id != user_id:
+        return jsonify({"error": "You are not authorized to delete this post"}), 403
+
+    db.session.delete(post)
+    db.session.commit()
+
+    return jsonify({"message": "Post deleted successfully"})
 
 @app.route("/users/<int:user_id>/posts", methods=["GET"])
 @login_required  # Protected route
@@ -231,23 +267,6 @@ def create_post(user_id):
     db.session.add(new_post)
     db.session.commit()
     return jsonify({"message": "Post created successfully", "post_id": new_post.id})
-
-@app.route("/users/<int:user_id>/weak_posts", methods=["POST"])
-@login_required
-def create_weak_post(user_id):
-    title = request.json.get("title")
-    content = request.json.get("content")
-
-    if not title or not content:
-        return jsonify({"error": "Title and content are required"}), 400
-
-    # Vulnerable raw SQL query
-    query = text(f"INSERT INTO Posts (user_id, title, content) VALUES ({user_id}, '{title}', '{content}')")
-    db.session.execute(query)
-    db.session.commit()
-
-    return jsonify({"message": "Post created successfully"})
-
 
 @app.route("/users/<int:user_id>/posts/<int:post_id>", methods=["PUT"])
 @login_required  # Protected route

@@ -107,45 +107,36 @@ body {
     width: 100%;
   }
   
-  .comment-actions {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-  }
+
   
-  .comment-actions .edit-button,
-  .comment-actions .delete-button {
+.edit-button,
+.delete-button {
     padding: 5px 10px;
-    margin-top: 20px;
+    margin: 5px;
     font-size: 12px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    position: relative;
-    
-  }
-  
-  .comment-actions .edit-button {
+}
+
+.edit-button {
     background-color: #007bff;
     color: white;
-  }
-  
-  .comment-actions .delete-button {
+}
+
+.delete-button {
     background-color: #dc3545;
     color: white;
-  }
-  
-  .comment-actions .edit-button:hover {
+}
+
+.edit-button:hover {
     background-color: #0056b3;
-  }
-  
-  .comment-actions .delete-button:hover {
+}
+
+.delete-button:hover {
     background-color: #b21f2d;
-  }
+}
+
   
   .comment-date {
     position: absolute;
