@@ -1,23 +1,33 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LoginPage from "./components/LoginRegister/LoginRegister";
+import { Routes, Route } from "react-router-dom";
+import LoginRegister from "./components/LoginRegister/LoginRegister";
 import HomePage from "./components/HomePage/HomePage";
 import MonitoringPage from "./components/MonitoringPage/MonitoringPage";
 import NotFound from "./components/NotFound/NotFound";
-import Settings from "./components/Settings";
-import RulesPage from "./components/Rules";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute"; // Import AdminRoute
 
 const Router = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/monitoring" element={<MonitoringPage />} />
-        <Route path="*" element={<NotFound />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/rules" element={<Settings />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<LoginRegister />} />
+      <Route
+        path="/home"
+        element={
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/monitoring"
+        element={
+          <AdminRoute>
+            <MonitoringPage />
+          </AdminRoute>
+        }
+      />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 

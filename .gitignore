@@ -25,5 +25,5 @@ yarn-debug.log*
 yarn-error.log*
 
 #db
-
 /api/instance/db.sqlite
+dump.rdb

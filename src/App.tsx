@@ -2,8 +2,9 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import LoginRegister from './components/LoginRegister/LoginRegister';
 import MonitoringPage from './components/MonitoringPage/MonitoringPage'; // New page
-import MainPage from './components/HomePage/HomePage'; // Import MainPage
-import { AuthProvider } from './components/AuthContext'; // Import AuthProvider
+
+import HomePage from './components/HomePage/HomePage'; // Import HomePage
+import { AuthProvider } from './AuthContext'; // Import AuthProvider
 import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
 
 const App = () => {
@@ -16,8 +17,8 @@ const App = () => {
     } else if (location.pathname === '/monitoring') {
       document.body.className = 'monitoring-page-body';
     }
-    else if (location.pathname === '/main') {
-      document.body.className = 'main-page-body';
+    else if (location.pathname === '/home') {
+      document.body.className = 'home-page-body';
     }
 
   }, [location]);
@@ -34,10 +35,10 @@ const App = () => {
               }
           />
           <Route
-              path="/main"
+              path="/home"
               element={
                   <ProtectedRoute>
-                      <MainPage />
+                      <HomePage />
                   </ProtectedRoute>
               }
           />       

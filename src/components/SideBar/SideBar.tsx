@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import './SideBar.css';
-
+import LogoutButton  from '../LogoutButton';
 import { FaAngleRight } from "react-icons/fa";
 import { LuFileSpreadsheet } from "react-icons/lu";
 import { IoSettingsSharp } from "react-icons/io5";
@@ -8,7 +8,6 @@ import { HiAdjustmentsVertical } from "react-icons/hi2";
 import { FaFireAlt } from "react-icons/fa";
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { Link } from 'react-router-dom';
-
 
 interface SideBarProps {
   children?: ReactNode; // Defines the optional children prop
@@ -30,7 +29,7 @@ const SideBar: React.FC<SideBarProps> = ({ children }) => {
             </div>
           </div>
 
-          {/* <FaAngleRight className="toggle" /> */}
+          <FaAngleRight className="toggle" />
         </header>
 
         <div className="menu-bar">
@@ -66,10 +65,7 @@ const SideBar: React.FC<SideBarProps> = ({ children }) => {
 
           <div className="bottom-content">
             <li>
-              <a href="/">
-                <RiLogoutBoxLine className="icon" />
-                <span className="text nav-text">Logout</span>
-              </a>
+              <LogoutButton />
             </li>
           </div>
         </div>
