@@ -5,6 +5,8 @@ from flask_session import Session
 from config import ApplicationConfig
 from models import db, User, Post, Profile, RequestLog
 from functools import wraps
+from datetime import datetime
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -58,7 +60,12 @@ def admin_required(func):
 def register_user():
     email = request.json.get("email")
     password = request.json.get("password")
-
+    name = request.json.get("full_name")
+    phone_number = request.json.get("phone_number")
+    date_of_birth = request.json.get("date_of_birth")
+    date_of_birth = datetime.strptime(date_of_birth, "%d.%m.%Y").date()
+    address = request.json.get("address")
+  
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "User already exists"}), 409
 
@@ -66,7 +73,10 @@ def register_user():
     new_user = User(email=email, password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
-
+    new_profile = Profile(user_id = new_user.id, name=name, phone_number=phone_number, date_of_birth=date_of_birth, address=address)
+    db.session.add(new_profile)
+    db.session.commit()
+    
     session["user_id"] = new_user.id
     return jsonify({"id": new_user.id, "email": new_user.email})
 
@@ -101,7 +111,7 @@ def login_user():
     email = request.json.get("email")
     password = request.json.get("password")
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(email=email).first() 
     if not user or not bcrypt.check_password_hash(user.password, password):
         return jsonify({"error": "Invalid credentials"}), 401
 
@@ -232,7 +242,24 @@ def get_user_logs(user_id):
         for log in logs
     ])
 
-
+@app.route("/profiles", methods=["GET"])
+@login_required  # Protected route
+def get_all_profiles():
+    profiles = Profile.query.all()
+    return jsonify([
+        {
+            "id": profile.id,
+            "user_id": profile.user_id,
+            "name": profile.name,
+            "phone_number": profile.phone_number,
+            "date_of_birth": profile.date_of_birth,
+            "address": profile.address,
+            "created_at": profile.created_at,
+            "updated_at": profile.updated_at
+        }
+        for profile in profiles
+    ])
+    
 @app.route("/users/<int:user_id>/profile", methods=["GET", "POST", "PUT", "DELETE"])
 @login_required  # Protected route
 def manage_profile(user_id):
@@ -241,11 +268,13 @@ def manage_profile(user_id):
         return jsonify({"error": "User not found"}), 404
 
     if request.method == "GET":
+        print("Iam")
         profile = Profile.query.filter_by(user_id=user_id).first()
         if not profile:
             return jsonify({"error": "Profile not found"}), 404
         return jsonify({
             "id": profile.id,
+            "user_id": profile.user_id,
             "name": profile.name,
             "phone_number": profile.phone_number,
             "date_of_birth": profile.date_of_birth,
