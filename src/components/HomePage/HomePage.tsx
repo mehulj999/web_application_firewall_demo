@@ -35,6 +35,7 @@ class CommentArea extends Component<CommentAreaProps, CommentAreaState> {
 
   handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
   
     if (this.state.userInput) {
       const newComment: Comment = {

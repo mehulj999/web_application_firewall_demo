@@ -89,23 +89,7 @@ header .image-text .header-text{
     margin-top: -2px;
 }
 
-.sidebar header .toggle{
-    position: absolute;
-    top: 50%;
-    right: -25px;
-    transform: translateY(-50%);
-    height: 25px;
-    width: 25px;
-    background: var(--primary-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    color: var(--sidebar-color);
-    font-size: 22px;
 
-
-}
 
 .sidebar li{
 
@@ -119,7 +103,7 @@ header .image-text .header-text{
 }
 
 .sidebar li .icon{
-    font-size: 20px;
+    font-size: 25px;
     color: #4a90e2;
     min-width: 60px;
     align-items: center;
