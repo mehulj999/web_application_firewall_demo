@@ -4,16 +4,20 @@ import LogoutButton  from '../LogoutButton';
 import { FaAngleRight } from "react-icons/fa";
 import { LuFileSpreadsheet } from "react-icons/lu";
 import { IoSettingsSharp } from "react-icons/io5";
-import { HiAdjustmentsVertical } from "react-icons/hi2";
+import { CgProfile } from "react-icons/cg";
 import { FaFireAlt } from "react-icons/fa";
-import { RiLogoutBoxLine } from "react-icons/ri";
 import { Link } from 'react-router-dom';
+import { BsClipboard2Data } from "react-icons/bs";
+import { useAuth } from "../../AuthContext";
 
 interface SideBarProps {
   children?: ReactNode; // Defines the optional children prop
 }
 
 const SideBar: React.FC<SideBarProps> = ({ children }) => {
+  const { user, loading } = useAuth();
+  var condition = user?.is_admin;
+  console.log(condition);
   return (
     <>
       <nav className="sidebar">
@@ -28,8 +32,6 @@ const SideBar: React.FC<SideBarProps> = ({ children }) => {
               <span className="profession">User</span>
             </div>
           </div>
-
-          <FaAngleRight className="toggle" />
         </header>
 
         <div className="menu-bar">
@@ -42,24 +44,19 @@ const SideBar: React.FC<SideBarProps> = ({ children }) => {
               </Link>
             </li>
               <li className="nav-link">
-              <Link to="/settings">
-                  <IoSettingsSharp className="icon" />
-                  <span className="text nav-text">Settings</span>
+              <Link to="/profile">
+                  <CgProfile className="icon" />
+                  <span className="text nav-text">Profile</span>
               </Link>
               </li>
-
-              <li className="nav-link">
-                <Link to="/rules">
-                  <IoSettingsSharp className="icon" />
-                  <span className="text nav-text">Rules</span>
-                </Link>
-              </li>
-              <li className="nav-link">
-                <a href="#">
-                  <FaFireAlt className="icon" />
-                  <span className="text nav-text">Dashboard</span>
-                </a>
-              </li>
+              {condition && (
+                <li className="nav-link">
+                  <Link to="/monitoring">
+                    <BsClipboard2Data className="icon" />
+                    <span className="text nav-text">Dashboard</span>
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 

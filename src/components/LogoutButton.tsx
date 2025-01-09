@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import { TbLogout2 } from "react-icons/tb";
+import './LogoutButton.css';
 
 const LogoutButton: React.FC = () => {
   const { setUser } = useAuth(); // Access the setUser function from AuthContext
@@ -29,7 +31,7 @@ const LogoutButton: React.FC = () => {
     navigate('/login');
   };
 
-  return <button onClick={handleLogout}>Logout</button>;
+  return (<button className="button" onClick={handleLogout}><TbLogout2 className="logouticon" /> Logout</button>);
 };
 
 
