@@ -187,6 +187,36 @@ def create_post(user_id):
     return jsonify({"message": "Post created successfully", "post_id": new_post.id})
 
 
+@app.route("/users/<int:user_id>/posts/<int:post_id>", methods=["PUT"])
+@login_required  # Protected route
+def edit_post(user_id, post_id):
+    data = request.json
+    content = data.get("content")
+
+    if not content:
+        return jsonify({"error": "Content is required"}), 400
+
+    post = Post.query.filter_by(id=post_id, user_id=user_id).first()
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
+
+    post.content = content
+    db.session.commit()
+
+    return jsonify({"message": "Post updated successfully", "post_id": post.id})
+
+@app.route("/users/<int:user_id>/posts/<int:post_id>", methods=["DELETE"])
+@login_required  # Protected route
+def delete_post(user_id, post_id):
+    post = Post.query.filter_by(id=post_id, user_id=user_id).first()
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
+
+    db.session.delete(post)
+    db.session.commit()
+
+    return jsonify({"message": "Post deleted successfully"})
+
 @app.route("/users/<int:user_id>/logs", methods=["GET"])
 @login_required  # Protected route
 def get_user_logs(user_id):

@@ -6,6 +6,7 @@ import { useAuth } from '../../AuthContext';
 // Define the props and state types
 interface CommentAreaProps {
   username: string;
+  userId: number;
 }
 
 interface Comment {
@@ -32,23 +33,45 @@ class CommentArea extends Component<CommentAreaProps, CommentAreaState> {
     this.setState({ userInput: e.target.value });
   };
 
-  handleSubmit = (e: FormEvent) => {
+  handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
+  
     if (this.state.userInput) {
       const newComment: Comment = {
         username: this.props.username,
         message: this.state.userInput,
-        date: new Date()
+        date: new Date(),
       };
-
-      this.setState((prevState) => ({
-        comments: [...prevState.comments, newComment],
-        userInput: ''
-      }));
+  
+      try {
+        const response = await fetch(`/users/${this.props.userId}/posts`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            title: "Comment Post",
+            content: newComment.message,
+          }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to submit comment');
+        }
+  
+        const result = await response.json();
+        console.log('Post created successfully:', result);
+  
+        this.setState((prevState) => ({
+          comments: [...prevState.comments, newComment],
+          userInput: '',
+        }));
+      } catch (error) {
+        console.error('Error while submitting comment:', error);
+      }
     }
   };
-
   render() {
     return (
       <div className="CommentArea" style={{ position: 'relative' }}>
@@ -98,7 +121,7 @@ const HomePage: React.FC = () => {
     <div className="mainpage-main">
       <SideBar />
       <div style={{ marginLeft: '0px', flex: 1 }}>
-        <CommentArea username={name} />
+      {user && <CommentArea username={user.email} userId={user.id} />}
       </div>
     </div>
   );
