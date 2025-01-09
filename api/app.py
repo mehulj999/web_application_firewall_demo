@@ -268,7 +268,6 @@ def manage_profile(user_id):
         return jsonify({"error": "User not found"}), 404
 
     if request.method == "GET":
-        print("Iam")
         profile = Profile.query.filter_by(user_id=user_id).first()
         if not profile:
             return jsonify({"error": "Profile not found"}), 404
