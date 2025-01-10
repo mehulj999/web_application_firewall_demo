@@ -99,7 +99,7 @@ handleEdit = async (commentId: number, newContent: string) => {
       const comments = data.map((post: any) => ({
         id: post.id,
         user_id: post.user_id,
-        username: post.user_id,
+        username: post.username,
         message: post.content,
         date: new Date(post.created_at),
       }));

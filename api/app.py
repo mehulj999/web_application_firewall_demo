@@ -73,7 +73,7 @@ def register_user():
     name = request.json.get("full_name")
     phone_number = request.json.get("phone_number")
     date_of_birth = request.json.get("date_of_birth")
-    date_of_birth = datetime.strptime(date_of_birth, "%d.%m.%Y").date()
+    date_of_birth = datetime.strptime(date_of_birth, "%Y-%m-%d").date()
     address = request.json.get("address")
 
     if User.query.filter_by(email=email).first():
@@ -116,8 +116,9 @@ def get_current_user():
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
-
-    return jsonify({"id": user.id, "email": user.email, "is_admin": user.is_admin})
+    
+    profile = user.profile
+    return jsonify({"id": user.id, "email": user.email, "is_admin": user.is_admin, "name": profile.name if profile else "Unknown User"})
 
 @app.route("/login", methods=["POST"])
 def login_user():
@@ -185,6 +186,7 @@ def get_all_posts():
             {
                 "id": post.id,
                 "user_id": post.user_id,
+                "username": post.author.profile.name if post.author and post.author.profile else f"User {post.user_id}",
                 "title": post.title,
                 "content": post.content,
                 "created_at": post.created_at,

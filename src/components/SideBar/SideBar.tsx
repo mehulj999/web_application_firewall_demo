@@ -28,8 +28,8 @@ const SideBar: React.FC<SideBarProps> = ({ children }) => {
             </span>
 
             <div className="text header-text">
-              <span className="name">Firewall</span>
-              <span className="profession">User</span>
+              <span className="name">{user?.name || "Firewall"}</span>
+              <span className="profession">{user?.email || "User"}</span>
             </div>
           </div>
         </header>
