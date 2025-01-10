@@ -96,20 +96,23 @@ handleEdit = async (commentId: number, newContent: string) => {
       }
   
       const data = await response.json();
-      const comments = data.map((post: any) => ({
-        id: post.id,
-        user_id: post.user_id,
-        username: post.username,
-        message: post.content,
-        date: new Date(post.created_at),
-      }));
+      const comments = data
+        .map((post: any) => ({
+          id: post.id,
+          user_id: post.user_id,
+          username: post.username,
+          message: post.content,
+          date: new Date(post.created_at),
+        }))
+        .sort((a: Comment, b: Comment) => b.date.getTime() - a.date.getTime()); // Sort by descending date
   
       this.setState({ comments, loading: false });
     } catch (error) {
       console.error('Error fetching comments:', error);
       this.setState({ loading: false, error: 'Failed to load comments' });
+    }
   }
-  }
+  
   
 
   updateInput = (e: ChangeEvent<HTMLInputElement>) => {
@@ -147,13 +150,15 @@ handleEdit = async (commentId: number, newContent: string) => {
         }
   
         const commentsData = await commentsResponse.json();
-        const comments = commentsData.map((post: any) => ({
-          id: post.id,
-          user_id: post.user_id,
-          username: post.username,
-          message: post.content,
-          date: new Date(post.created_at),
-        }));
+        const comments = commentsData
+          .map((post: any) => ({
+            id: post.id,
+            user_id: post.user_id,
+            username: post.username,
+            message: post.content,
+            date: new Date(post.created_at),
+          }))
+          .sort((a: Comment, b: Comment) => b.date.getTime() - a.date.getTime()); // Sort by descending date
   
         this.setState({ comments, userInput: '' }); // Update state with re-fetched comments
       } catch (error) {
@@ -161,6 +166,7 @@ handleEdit = async (commentId: number, newContent: string) => {
       }
     }
   };
+  
   
 
   render() {
