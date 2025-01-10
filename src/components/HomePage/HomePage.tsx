@@ -10,6 +10,7 @@ interface CommentAreaProps {
   user: {
     id: number;
     email:string;
+    is_admin: boolean;
   }
 }
 
@@ -178,8 +179,7 @@ handleEdit = async (commentId: number, newContent: string) => {
                             <p>{comment.message}</p>
                         </div>
                         <div className="comment-actions">
-                            {/* Show Edit and Delete buttons only if the logged-in user owns the comment */}
-                            {comment.user_id === user.id && (
+                            {user.is_admin || comment.user_id === user.id ? (
                                 <>
                                     <button
                                         className="edit-button"
@@ -202,7 +202,7 @@ handleEdit = async (commentId: number, newContent: string) => {
                                         Delete
                                     </button>
                                 </>
-                            )}
+                            ) : null}
                         </div>
                         <div className="comment-date">
                             <em>{comment.date.toLocaleString()}</em>
@@ -237,7 +237,8 @@ const HomePage: React.FC = () => {
     <div className="mainpage-main">
       <SideBar />
       <div style={{ marginLeft: '0px', flex: 1 }}>
-        {user && <CommentArea username={user.email} userId={user.id} user={user} />}
+        {user && ( <CommentArea 
+                    username={user.email} userId={user.id} user={user} /> )}
       </div>
     </div>
   );
