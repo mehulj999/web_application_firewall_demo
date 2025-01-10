@@ -1,23 +1,44 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState, useEffect } from 'react';
 import './SideBar.css';
-import LogoutButton  from '../LogoutButton';
-import { FaAngleRight } from "react-icons/fa";
+import LogoutButton from '../LogoutButton';
 import { LuFileSpreadsheet } from "react-icons/lu";
-import { IoSettingsSharp } from "react-icons/io5";
 import { CgProfile } from "react-icons/cg";
-import { FaFireAlt } from "react-icons/fa";
-import { Link } from 'react-router-dom';
 import { BsClipboard2Data } from "react-icons/bs";
 import { useAuth } from "../../AuthContext";
+import { Link } from 'react-router-dom';
 
 interface SideBarProps {
   children?: ReactNode; // Defines the optional children prop
 }
 
+interface Profile {
+  name: string;
+  phone_number: string;
+  date_of_birth: string;
+  address: string;
+}
+
+const fetchProfile = async (user_id: number): Promise<Profile> => {
+  const response = await fetch(`/users/${user_id}/profile`, { credentials: 'include' });
+  if (!response.ok) throw new Error('Failed to fetch profile');
+  const data = await response.json();
+  return data;
+};
+
 const SideBar: React.FC<SideBarProps> = ({ children }) => {
   const { user, loading } = useAuth();
-  var condition = user?.is_admin;
-  console.log(condition);
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile(user.id).then(setProfile).catch(console.error);
+    }
+  }, [user]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <nav className="sidebar">
@@ -28,7 +49,7 @@ const SideBar: React.FC<SideBarProps> = ({ children }) => {
             </span>
 
             <div className="text header-text">
-              <span className="name">{user?.name || "Firewall"}</span>
+              <span className="name">{profile?.name || "Firewall"}</span>
               <span className="profession">{user?.email || "User"}</span>
             </div>
           </div>
@@ -37,19 +58,19 @@ const SideBar: React.FC<SideBarProps> = ({ children }) => {
         <div className="menu-bar">
           <div className="menu">
             <ul className="menu-links">
-            <li className="nav-link">
-              <Link to="/home">
-                <LuFileSpreadsheet className="icon" />
-                <span className="text nav-text">Posts</span>
-              </Link>
-            </li>
               <li className="nav-link">
-              <Link to="/profile">
+                <Link to="/home">
+                  <LuFileSpreadsheet className="icon" />
+                  <span className="text nav-text">Posts</span>
+                </Link>
+              </li>
+              <li className="nav-link">
+                <Link to="/profile">
                   <CgProfile className="icon" />
                   <span className="text nav-text">Profile</span>
-              </Link>
+                </Link>
               </li>
-              {condition && (
+              {user?.is_admin && (
                 <li className="nav-link">
                   <Link to="/monitoring">
                     <BsClipboard2Data className="icon" />
@@ -67,7 +88,6 @@ const SideBar: React.FC<SideBarProps> = ({ children }) => {
           </div>
         </div>
       </nav>
-      <script src="script.js"></script>
       {children}
     </>
   );

@@ -1,19 +1,31 @@
-## TO DO
-
 from datetime import datetime
-from db import requestlogs
+from flask import request
+from models import db, RequestLog
 
 class RequestLoggerMiddleware:
     def __init__(self, app):
         self.app = app
 
     def __call__(self, environ, start_response):
-        # Log request to the database
-        path = environ.get('PATH_INFO', '')
-        method = environ.get('REQUEST_METHOD', '')
+        # Capture request details
+        with app.app_context():
+            request_ip = environ.get("REMOTE_ADDR")
+            request_method = environ.get("REQUEST_METHOD")
+            request_url = environ.get("PATH_INFO")
+            request_payload = environ.get("CONTENT_LENGTH", "None")
+            user_id = request.environ.get("user_id", None)
 
-        # Only log for login or register routes
-        if path in ['/login', '/register']:
-            log_request(path, method)
-        
+            log_entry = RequestLog(
+                user_id=user_id,
+                request_url=request_url,
+                request_payload=str(request_payload),
+                request_type=request_method,
+                request_time=datetime.utcnow(),
+                request_ip=request_ip,
+                response_status=None,  # Add logic to capture response status if needed
+                response_object=None,  # Add response object details if needed
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+
         return self.app(environ, start_response)
