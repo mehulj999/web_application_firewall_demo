@@ -118,16 +118,8 @@ handleEdit = async (commentId: number, newContent: string) => {
 
   handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
+  
     if (this.state.userInput) {
-      const newComment: Comment = {
-        id: Date.now(), // Temporary ID until the server assigns one
-        user_id: this.props.userId,
-        username: this.props.username,
-        message: this.state.userInput,
-        date: new Date(),
-      };
-
       try {
         const response = await fetch(`/users/${this.props.userId}/posts`, {
           method: 'POST',
@@ -137,25 +129,39 @@ handleEdit = async (commentId: number, newContent: string) => {
           credentials: 'include',
           body: JSON.stringify({
             title: 'Comment Post',
-            content: newComment.message,
+            content: this.state.userInput,
           }),
         });
-
+  
         if (!response.ok) {
           throw new Error('Failed to submit comment');
         }
-
-        const result = await response.json();
-
-        this.setState((prevState) => ({
-          comments: [...prevState.comments, { ...newComment, id: result.post_id, }],
-          userInput: '',
+  
+        // Re-fetch all comments to ensure proper user name mapping
+        const commentsResponse = await fetch('/posts', {
+          credentials: 'include',
+        });
+  
+        if (!commentsResponse.ok) {
+          throw new Error('Failed to fetch comments');
+        }
+  
+        const commentsData = await commentsResponse.json();
+        const comments = commentsData.map((post: any) => ({
+          id: post.id,
+          user_id: post.user_id,
+          username: post.username,
+          message: post.content,
+          date: new Date(post.created_at),
         }));
+  
+        this.setState({ comments, userInput: '' }); // Update state with re-fetched comments
       } catch (error) {
-        console.error('Error while submitting comment:', error);
+        console.error('Error while submitting comment or re-fetching comments:', error);
       }
     }
   };
+  
 
   render() {
     const { comments, userInput, loading, error } = this.state;
