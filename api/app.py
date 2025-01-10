@@ -198,12 +198,13 @@ def get_all_posts():
 @login_required
 def update_post(post_id):
     user_id = session.get("user_id")
+    user = User.query.get(user_id)
     post = Post.query.get(post_id)
 
     if not post:
         return jsonify({"error": "Post not found"}), 404
-
-    if post.user_id != user_id:
+    
+    if not user.is_admin and post.user_id != user_id:
         return jsonify({"error": "You are not authorized to edit this post"}), 403
 
     data = request.json
@@ -216,12 +217,13 @@ def update_post(post_id):
 @login_required
 def delete_user_post(post_id):
     user_id = session.get("user_id")
+    user = User.query.get(user_id)
     post = Post.query.get(post_id)
 
     if not post:
         return jsonify({"error": "Post not found"}), 404
 
-    if post.user_id != user_id:
+    if not user.is_admin and post.user_id != user_id:
         return jsonify({"error": "You are not authorized to delete this post"}), 403
 
     db.session.delete(post)
