@@ -253,6 +253,7 @@ def get_user_posts(user_id):
             for post in posts
         ]
     )
+    
 
 @app.route("/users/<int:user_id>/posts", methods=["POST"])
 @login_required  # Protected route
@@ -302,6 +303,23 @@ def delete_post(user_id, post_id):
     db.session.commit()
 
     return jsonify({"message": "Post deleted successfully"})
+
+@app.route("/logs", methods=["GET"])
+def fetch_logs():
+    logs = RequestLog.query.all()
+    return jsonify({
+        "logs": [
+            {
+                "timestamp": log.request_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "method": log.request_type,
+                "endpoint": log.request_url,
+                "status": log.response_status,
+                "client_ip": log.request_ip,
+                "user": log.user_id if log.user_id else "Anonymous",
+            }
+            for log in logs
+        ]
+    })
 
 
 @app.route("/users/<int:user_id>/logs", methods=["GET"])
