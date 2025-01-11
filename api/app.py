@@ -1,12 +1,16 @@
 from datetime import datetime
 from functools import wraps
-from flask import Flask, request, jsonify, session, g
+from flask import Flask, request, jsonify, session
 from config import ApplicationConfig
 from models import db, User, Post, Profile, RequestLog
 from sqlalchemy.sql import text
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_session import Session
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_limiter.errors import RateLimitExceeded
+import re
 import json  # Add this import for JSON serialization
 
 # Initialize Flask app
@@ -33,6 +37,49 @@ def log_request_start():
     # Attach the start time to the request for calculating duration later
     request.start_time = datetime.now()
 
+# ---------------------------------
+# FIREWALL IMPLEMENTATION CODE
+# ---------------------------------
+
+# Attack 1 SQL Injection
+@app.before_request
+def detect_sql_injection():
+    if request.method in ["POST", "GET"] and request.path == "/login":
+        payload = request.get_data(as_text=True) or request.args.to_dict()
+        sql_injection_pattern = (
+            r"(\bSELECT\b|\bDROP\b|\bUNION\b|\bOR\b|\bAND\b).*--|;|--|/\*|\*/"
+        )
+        if re.search(sql_injection_pattern, str(payload), re.IGNORECASE):
+            return (
+                jsonify({"error": "Malicious activity detected (SQL Injection)"}), 403,
+            )
+
+
+# Attack 2 Cross-Site Scripting (XSS)
+@app.before_request
+def detect_xss():
+    if request.method in ["POST", "GET"] and "post" in request.path:
+        payload = request.get_data(as_text=True) or request.args.to_dict()
+        xss_pattern = r"(<script.*?>.*?</script>|<.*?on\w+=['\"].*?['\"].*?>)"
+        if re.search(xss_pattern, str(payload), re.IGNORECASE):
+            return jsonify({"error": "Malicious activity detected (XSS)"}), 403
+
+
+# Attack 3 Denial of Service (DoS)
+# Initialize Flask-Limiter
+limiter = Limiter(
+    get_remote_address, app=app, default_limits=["500 per minute"]
+)
+
+@app.errorhandler(RateLimitExceeded)
+def handle_rate_limit_exceeded(e):
+    return jsonify({
+        'error': 'Possible DoS attack detected. Too many attempts in a short period.'
+    }), 429
+
+# ---------------------------------
+# END
+# ---------------------------------
 
 @app.after_request
 def log_request_response(response):
@@ -48,6 +95,7 @@ def log_request_response(response):
     )
     return response
 
+
 def log_request(req=None, response=None, user_id=None):
     if not request or not response:
         return
@@ -59,11 +107,14 @@ def log_request(req=None, response=None, user_id=None):
         request_body = None  # Handle non-serializable data gracefully
 
     # Get other request details
-    request_time = request.start_time if hasattr(request, "start_time") else datetime.now()
+    request_time = (
+        request.start_time if hasattr(request, "start_time") else datetime.now()
+    )
     request_type = request.method
     request_url = request.url
     request_ip = request.remote_addr
 
+    print("the response is", response)
     # Get response details
     response_status = response.status_code
     response_object = response.get_json()  # Optional: store response as JSON string
@@ -90,6 +141,7 @@ def log_request(req=None, response=None, user_id=None):
 # ----------------------------
 # Flask Hooks for Logging
 # ----------------------------
+
 
 def login_required(func):
     @wraps(func)
@@ -132,7 +184,9 @@ def register_user():
     password = request.json.get("password")
     name = request.json.get("full_name")
     phone_number = request.json.get("phone_number")
-    date_of_birth = datetime.strptime(request.json.get("date_of_birth"), "%Y-%m-%d").date()
+    date_of_birth = datetime.strptime(
+        request.json.get("date_of_birth"), "%Y-%m-%d"
+    ).date()
     address = request.json.get("address")
 
     if User.query.filter_by(email=email).first():
@@ -190,6 +244,7 @@ def get_current_user():
 
 
 @app.route("/login", methods=["POST"])
+@limiter.limit("5 per second")  # Allow only 5 login attempts per second
 def login_user():
     email = request.json.get("email")
     password = request.json.get("password")
@@ -331,7 +386,6 @@ def get_user_posts(user_id):
         ]
     )
 
-
 @app.route("/users/<int:user_id>/posts", methods=["POST"])
 @login_required  # Protected route
 def create_post(user_id):
@@ -405,18 +459,28 @@ def fetch_logs():
         }
     )
 
-@app.route('/monitoring_logs', methods=['GET'])
+
+@app.route("/clear_logs", methods=["DELETE"])
+@admin_required  # Protected route
+def delete_logs():
+    RequestLog.query.delete()
+    db.session.commit()
+
+    return jsonify({"message": "Logs deleted successfully"})
+
+
+@app.route("/monitoring_logs", methods=["GET"])
 @login_required  # Protected route
 def get_monitoring_logs():
     logs = RequestLog.query.all()
     log_data = [
         {
-           "timestamp": log.request_time.isoformat(),
+            "timestamp": log.request_time.isoformat(),
             "method": log.request_type,
             "endpoint": log.request_url,
             "status": log.response_status,
             "client_ip": log.request_ip,
-            "user": log.user_id or "unknown"  # Assuming user_id maps to a user
+            "user": log.user_id or "unknown",  # Assuming user_id maps to a user
         }
         for log in logs
     ]

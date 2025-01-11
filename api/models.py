@@ -55,3 +55,4 @@ class RequestLog(db.Model):
     request_ip = db.Column(db.String(45))
     response_status = db.Column(db.Integer)
     response_object = db.Column(db.Text)
+    suspicious_activity = db.Column(db.Boolean, default=False)
