@@ -156,8 +156,8 @@ body {
     padding: 20px;
     overflow-x: auto;
     overflow-y: auto; /* Enable scrolling within the sidebar */
-    min-height: auto;
-    max-height: calc(100vh - 223px); 
+    height: 100%;
+    /* max-height: calc(100vh - 223px);  */
     margin-bottom: auto;
 }
 
@@ -264,4 +264,14 @@ body {
     font-size: 24px;
     cursor: pointer;
   }
+  .response-success {
+    color: green;
+  }
   
+  .response-denied {
+    color: red;
+  }
+  
+  .response-unknown {
+    color: black;
+  }
