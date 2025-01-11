@@ -1,12 +1,13 @@
-from flask import Flask, request, jsonify, session
+from datetime import datetime
+from functools import wraps
+from flask import Flask, request, jsonify, session, g
+from config import ApplicationConfig
+from models import db, User, Post, Profile, RequestLog
+from sqlalchemy.sql import text
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_session import Session
-from config import ApplicationConfig
-from models import db, User, Post, Profile, RequestLog
-from functools import wraps
-from datetime import datetime
-from sqlalchemy.sql import text
+import json  # Add this import for JSON serialization
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -14,7 +15,7 @@ app.config.from_object(ApplicationConfig)
 
 # Initialize Flask extensions
 bcrypt = Bcrypt(app)
-CORS(app, supports_credentials=True)  # Enable CORS with credentials
+CORS(app, supports_credentials=True)
 Session(app)
 db.init_app(app)
 
@@ -22,27 +23,84 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-# Helper function for logging requests and responses
-def log_request(
-    user_id,
-    request_url,
-    request_payload,
-    request_type,
-    request_ip,
-    response_status,
-    response_object,
-):
-    # Add your logging logic here if necessary
-    pass
+# ----------------------------
+# Helper Function for Logging
+# ----------------------------
+
+
+@app.before_request
+def log_request_start():
+    # Attach the start time to the request for calculating duration later
+    request.start_time = datetime.now()
+
+
+@app.after_request
+def log_request_response(response):
+    skip_endpoints = ["fetch_logs", "print_routes", "register_admin", "monitoring_logs"]
+    if request.endpoint in skip_endpoints:
+        return response
+
+    # Call the existing log_request function
+    log_request(
+        req=request,
+        response=response,
+        user_id=session.get("user_id"),
+    )
+    return response
+
+def log_request(req=None, response=None, user_id=None):
+    if not request or not response:
+        return
+
+    # Serialize request body to JSON string or set to None if not JSON
+    try:
+        request_body = json.dumps(request.json) if request.is_json else None
+    except (TypeError, ValueError):
+        request_body = None  # Handle non-serializable data gracefully
+
+    # Get other request details
+    request_time = request.start_time if hasattr(request, "start_time") else datetime.now()
+    request_type = request.method
+    request_url = request.url
+    request_ip = request.remote_addr
+
+    # Get response details
+    response_status = response.status_code
+    response_object = response.get_json()  # Optional: store response as JSON string
+    try:
+        response_object = json.dumps(response_object)
+    except (TypeError, ValueError):
+        response_object = None
+
+    # Log the request and response details
+    new_log = RequestLog(
+        request_time=request_time,
+        request_type=request_type,
+        request_url=request_url,
+        request_ip=request_ip,
+        request_body=request_body,
+        response_status=response_status,
+        response_object=response_object,
+        user_id=user_id,
+    )
+    db.session.add(new_log)
+    db.session.commit()
+
+
+# ----------------------------
+# Flask Hooks for Logging
+# ----------------------------
 
 def login_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         if "user_id" not in session:
-            return jsonify({"error": "Unauthorized"}), 401
+            response = jsonify({"error": "Unauthorized"}), 401
+            return response
         return func(*args, **kwargs)
 
     return wrapper
+
 
 def admin_required(func):
     @wraps(func)
@@ -62,9 +120,11 @@ def admin_required(func):
 
     return wrapper
 
+
 # ----------------------
 # Routes Implementation
 # ----------------------
+
 
 @app.route("/register", methods=["POST"])
 def register_user():
@@ -72,8 +132,7 @@ def register_user():
     password = request.json.get("password")
     name = request.json.get("full_name")
     phone_number = request.json.get("phone_number")
-    date_of_birth = request.json.get("date_of_birth")
-    date_of_birth = datetime.strptime(date_of_birth, "%Y-%m-%d").date()
+    date_of_birth = datetime.strptime(request.json.get("date_of_birth"), "%Y-%m-%d").date()
     address = request.json.get("address")
 
     if User.query.filter_by(email=email).first():
@@ -96,6 +155,7 @@ def register_user():
     session["user_id"] = new_user.id
     return jsonify({"id": new_user.id, "email": new_user.email})
 
+
 @app.route("/register_admin", methods=["POST"])
 def register_admin():
     if User.query.filter_by(email="admin@gmail.com").first():
@@ -107,6 +167,7 @@ def register_admin():
     db.session.commit()
     return jsonify({"message": "Admin registered"})
 
+
 @app.route("/current_user", methods=["GET"])
 def get_current_user():
     user_id = session.get("user_id")
@@ -116,27 +177,36 @@ def get_current_user():
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
-    
+
     profile = user.profile
-    return jsonify({"id": user.id, "email": user.email, "is_admin": user.is_admin, "name": profile.name if profile else "Unknown User"})
+    return jsonify(
+        {
+            "id": user.id,
+            "email": user.email,
+            "is_admin": user.is_admin,
+            "name": profile.name if profile else "Unknown User",
+        }
+    )
+
 
 @app.route("/login", methods=["POST"])
 def login_user():
     email = request.json.get("email")
     password = request.json.get("password")
-
     user = User.query.filter_by(email=email).first()
     if not user or not bcrypt.check_password_hash(user.password, password):
-        return jsonify({"error": "Invalid credentials"}), 401
+        response = jsonify({"error": "Invalid credentials"}), 401
+        return response
 
     session["user_id"] = user.id
-    return jsonify({"id": user.id, "email": user.email, "is_admin": user.is_admin})
+    response = jsonify({"id": user.id, "email": user.email, "is_admin": user.is_admin})
+    return response
+
 
 # SQL INJECTION
 @app.route("/weak_login", methods=["POST"])
 def weak_login_user():
     email = request.json.get("email")
-    password = request.json.get("password")
 
     # Define a raw SQL query explicitly with column names
     query = text(f"SELECT id, email, is_admin FROM Users WHERE email = '{email}'")
@@ -151,10 +221,10 @@ def weak_login_user():
 
     return jsonify({"id": user_id, "email": user_email, "is_admin": is_admin})
 
+
 @app.route("/logout", methods=["POST"])
 @login_required  # Protected route
 def logout_user():
-    print("This did not run")
     session.pop("user_id", None)
     return jsonify({"message": "Logged out successfully"})
 
@@ -178,7 +248,7 @@ def get_all_users():
 
 
 @app.route("/posts", methods=["GET"])
-#@login_required  # Protected route
+# @login_required  # Protected route
 def get_all_posts():
     posts = Post.query.all()
     return jsonify(
@@ -186,7 +256,11 @@ def get_all_posts():
             {
                 "id": post.id,
                 "user_id": post.user_id,
-                "username": post.author.profile.name if post.author and post.author.profile else f"User {post.user_id}",
+                "username": (
+                    post.author.profile.name
+                    if post.author and post.author.profile
+                    else f"User {post.user_id}"
+                ),
                 "title": post.title,
                 "content": post.content,
                 "created_at": post.created_at,
@@ -195,7 +269,8 @@ def get_all_posts():
             for post in posts
         ]
     )
-    
+
+
 @app.route("/posts/<int:post_id>", methods=["PUT"])
 @login_required
 def update_post(post_id):
@@ -205,7 +280,7 @@ def update_post(post_id):
 
     if not post:
         return jsonify({"error": "Post not found"}), 404
-    
+
     if not user.is_admin and post.user_id != user_id:
         return jsonify({"error": "You are not authorized to edit this post"}), 403
 
@@ -214,6 +289,7 @@ def update_post(post_id):
     db.session.commit()
 
     return jsonify({"message": "Post updated successfully", "post_id": post.id})
+
 
 @app.route("/posts/<int:post_id>", methods=["DELETE"])
 @login_required
@@ -232,6 +308,7 @@ def delete_user_post(post_id):
     db.session.commit()
 
     return jsonify({"message": "Post deleted successfully"})
+
 
 @app.route("/users/<int:user_id>/posts", methods=["GET"])
 @login_required  # Protected route
@@ -253,7 +330,7 @@ def get_user_posts(user_id):
             for post in posts
         ]
     )
-    
+
 
 @app.route("/users/<int:user_id>/posts", methods=["POST"])
 @login_required  # Protected route
@@ -264,7 +341,7 @@ def create_post(user_id):
 
     title = request.json.get("title")
     content = request.json.get("content")
-    
+
     if not title or not content:
         return jsonify({"error": "Title and content are required"}), 400
 
@@ -272,6 +349,7 @@ def create_post(user_id):
     db.session.add(new_post)
     db.session.commit()
     return jsonify({"message": "Post created successfully", "post_id": new_post.id})
+
 
 @app.route("/users/<int:user_id>/posts/<int:post_id>", methods=["PUT"])
 @login_required  # Protected route
@@ -304,22 +382,45 @@ def delete_post(user_id, post_id):
 
     return jsonify({"message": "Post deleted successfully"})
 
+
 @app.route("/logs", methods=["GET"])
 def fetch_logs():
     logs = RequestLog.query.all()
-    return jsonify({
-        "logs": [
-            {
-                "timestamp": log.request_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "method": log.request_type,
-                "endpoint": log.request_url,
-                "status": log.response_status,
-                "client_ip": log.request_ip,
-                "user": log.user_id if log.user_id else "Anonymous",
-            }
-            for log in logs
-        ]
-    })
+    return jsonify(
+        {
+            "logs": [
+                {
+                    "id": log.id,
+                    "request_url": log.request_url,
+                    "request_type": log.request_type,
+                    "request_time": log.request_time,
+                    "request_ip": log.request_ip,
+                    "request_body": log.request_body,
+                    "response_status": log.response_status,
+                    "response_object": log.response_object,
+                    "user_id": log.user_id,
+                }
+                for log in logs
+            ]
+        }
+    )
+
+@app.route('/monitoring_logs', methods=['GET'])
+@login_required  # Protected route
+def get_monitoring_logs():
+    logs = RequestLog.query.all()
+    log_data = [
+        {
+           "timestamp": log.request_time.isoformat(),
+            "method": log.request_type,
+            "endpoint": log.request_url,
+            "status": log.response_status,
+            "client_ip": log.request_ip,
+            "user": log.user_id or "unknown"  # Assuming user_id maps to a user
+        }
+        for log in logs
+    ]
+    return jsonify({"logs": log_data}), 200
 
 
 @app.route("/users/<int:user_id>/logs", methods=["GET"])
@@ -440,5 +541,4 @@ def print_routes():
 
 
 if __name__ == "__main__":
-    print_routes()  # Print all defined routes
     app.run(debug=True)

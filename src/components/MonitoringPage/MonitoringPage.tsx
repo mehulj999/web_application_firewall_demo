@@ -4,13 +4,14 @@ import SideBar from '../SideBar/SideBar';
 
 
 interface Log {
-  timestamp: string;
+  timestamp: Date;
   method: string;
   endpoint: string;
   status: number;
   client_ip: string;
   user: string;
 }
+
 
 const MonitoringPage: React.FC = () => {
   const [logs, setLogs] = useState<Log[]>([]);
@@ -19,21 +20,26 @@ const MonitoringPage: React.FC = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await fetch('/logs', { credentials: 'include' });
+        const response = await fetch('/monitoring_logs', { credentials: 'include' });
         if (!response.ok) throw new Error('Failed to fetch logs');
         const data = await response.json();
-        setLogs(data.logs);
+        // I want to sort the data by timestamp
+        const parsedLogs = data.logs.map((log: any) => ({
+          ...log,
+          timestamp: new Date(log.timestamp), // Ensure timestamp is a Date object
+        }));
+        setLogs(parsedLogs);
+        // setLogs(data.logs); // Ensure data.logs matches the Log interface
       } catch (err: any) {
         setError(err.message);
       }
     };
     fetchLogs();
   }, []);
-  
 
   return (
     <div className="monitoring-main">
-      <SideBar/>
+      <SideBar />
       <div className="content">
         <div className="header">
           <div className="title">WAF Dashboard</div>
@@ -92,9 +98,9 @@ const MonitoringPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {logs.map((log, index) => (
+                {logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).map((log, index) => (
                   <tr key={index}>
-                    <td>{log.timestamp}</td>
+                    <td>{log.timestamp.toLocaleString()}</td>
                     <td>{log.method}</td>
                     <td>{log.endpoint}</td>
                     <td>{log.status}</td>
