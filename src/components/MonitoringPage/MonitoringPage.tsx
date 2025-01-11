@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './MonitoringPage.css';
 import SideBar from '../SideBar/SideBar';
 
-
 interface Log {
   timestamp: Date;
   method: string;
@@ -12,10 +11,14 @@ interface Log {
   user: string;
 }
 
-
 const MonitoringPage: React.FC = () => {
   const [logs, setLogs] = useState<Log[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  const [dateFilter, setDateFilter] = useState<string>('today');
+  const [methodFilter, setMethodFilter] = useState<string>('all-methods');
+  const [statusFilter, setStatusFilter] = useState<string>('all-status');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -23,19 +26,69 @@ const MonitoringPage: React.FC = () => {
         const response = await fetch('/monitoring_logs', { credentials: 'include' });
         if (!response.ok) throw new Error('Failed to fetch logs');
         const data = await response.json();
-        // I want to sort the data by timestamp
         const parsedLogs = data.logs.map((log: any) => ({
           ...log,
-          timestamp: new Date(log.timestamp), // Ensure timestamp is a Date object
+          timestamp: new Date(log.timestamp),
         }));
         setLogs(parsedLogs);
-        // setLogs(data.logs); // Ensure data.logs matches the Log interface
       } catch (err: any) {
         setError(err.message);
       }
     };
     fetchLogs();
   }, []);
+
+  const handleDateFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setDateFilter(event.target.value);
+  };
+
+  const handleMethodFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setMethodFilter(event.target.value);
+  };
+
+  const handleStatusFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter(event.target.value);
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value.toLowerCase());
+  };
+
+  const filteredLogs = logs.filter((log) => {
+    const now = new Date();
+    let isValid = true;
+
+    if (dateFilter === 'last-hour') {
+      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+      isValid = isValid && log.timestamp > oneHourAgo;
+    } else if (dateFilter === 'last-7-days') {
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      isValid = isValid && log.timestamp > sevenDaysAgo;
+    } else if (dateFilter === 'today') {
+      isValid = isValid && log.timestamp.toDateString() === now.toDateString();
+    }
+
+    if (methodFilter !== 'all-methods') {
+      isValid = isValid && log.method === methodFilter;
+    }
+
+    if (statusFilter !== 'all-status') {
+      isValid = isValid && log.status.toString() === statusFilter;
+    }
+
+    if (searchQuery) {
+    isValid =
+      isValid &&
+      (
+        (log.client_ip?.toLowerCase().includes(searchQuery) || '') ||
+        (log.endpoint?.toLowerCase().includes(searchQuery) || '') ||
+        (String(log.user || '').toLowerCase().includes(searchQuery))
+      );
+    }
+
+
+    return isValid;
+  });
 
   return (
     <div className="monitoring-main">
@@ -58,27 +111,32 @@ const MonitoringPage: React.FC = () => {
             </div>
           </div>
           <div className="filters">
-            <select>
+            <select value={dateFilter} onChange={handleDateFilterChange}>
               <option value="today">Today</option>
               <option value="last-hour">Last Hour</option>
               <option value="last-7-days">Last 7 Days</option>
             </select>
-            <select>
+            <select value={methodFilter} onChange={handleMethodFilterChange}>
               <option value="all-methods">All Methods</option>
               <option value="GET">GET</option>
               <option value="POST">POST</option>
               <option value="PUT">PUT</option>
               <option value="DELETE">DELETE</option>
             </select>
-            <select>
+            <select value={statusFilter} onChange={handleStatusFilterChange}>
               <option value="all-status">All Status Codes</option>
-              <option value="2xx">2xx Success</option>
-              <option value="4xx">4xx Client Errors</option>
-              <option value="5xx">5xx Server Errors</option>
+              <option value="200">200 Success</option>
+              <option value="403">403 Forbidden</option>
+              <option value="429">429 Too many requests</option>
             </select>
           </div>
           <div className="search-bar">
-            <input type="text" placeholder="Search IPs, Endpoints, or Users..." />
+            <input
+              type="text"
+              placeholder="Search IPs, Endpoints, or Users..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
             <button>Search</button>
           </div>
         </div>
@@ -98,7 +156,7 @@ const MonitoringPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).map((log, index) => (
+                {filteredLogs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).map((log, index) => (
                   <tr key={index}>
                     <td>{log.timestamp.toLocaleString()}</td>
                     <td>{log.method}</td>
