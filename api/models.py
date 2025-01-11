@@ -49,7 +49,7 @@ class RequestLog(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey("Users.id", ondelete="SET NULL"))
     request_url = db.Column(db.Text, nullable=False)
-    request_payload = db.Column(db.Text)
+    request_body = db.Column(db.Text)
     request_type = db.Column(db.String(10), nullable=False)
     request_time = db.Column(db.DateTime, default=datetime.utcnow)
     request_ip = db.Column(db.String(45))
