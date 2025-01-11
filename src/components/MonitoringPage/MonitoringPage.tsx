@@ -9,6 +9,7 @@ interface Log {
   status: number;
   client_ip: string;
   user: string;
+  response?: string;
 }
 
 const MonitoringPage: React.FC = () => {
@@ -31,6 +32,7 @@ const MonitoringPage: React.FC = () => {
         const parsedLogs = data.logs.map((log: any) => ({
           ...log,
           timestamp: new Date(log.timestamp),
+          response: log.response || '',
         }));
         setLogs(parsedLogs);
       } catch (err: any) {
@@ -203,44 +205,6 @@ const MonitoringPage: React.FC = () => {
                   </div>
                 ))}
             </div>
-            <div className="section">
-              <div className="section-title">Traffic Insights</div>
-              <div className="chart">
-                <strong>Top Endpoints</strong>
-                <br />
-                <small>(Graph Placeholder)</small>
-              </div>
-              <div className="chart">
-                <strong>Geo-Location Map</strong>
-                <br />
-                <small>(Map Placeholder)</small>
-              </div>
-              <div className="chart">
-                <strong>Status Code Distribution</strong>
-                <br />
-                <small>(Pie Chart Placeholder)</small>
-              </div>
-            </div>
-            <div className="section">
-              <div className="section-title">Quick Links</div>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                <li>
-                  <a href="#" style={{ color: '#4a90e2', textDecoration: 'none' }}>
-                    View Full Logs
-                  </a>
-                </li>
-                <li>
-                  <a href="#" style={{ color: '#4a90e2', textDecoration: 'none' }}>
-                    Analyze IP Behavior
-                  </a>
-                </li>
-                <li>
-                  <a href="#" style={{ color: '#4a90e2', textDecoration: 'none' }}>
-                    Error Details
-                  </a>
-                </li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>
@@ -253,15 +217,42 @@ const MonitoringPage: React.FC = () => {
               &times;
             </button>
             <h2>Log Details</h2>
+
+            {/* Malicious Activity Detected Message */}
+            {(selectedLog.status === 403 || selectedLog.status === 429) && (
+              <p style={{ color: 'red', fontWeight: 'bold', margin: '10px 0' }}>
+                Malicious Activity Detected
+              </p>
+            )}
+
             <p><strong>Timestamp:</strong> {selectedLog.timestamp.toLocaleString()}</p>
             <p><strong>Method:</strong> {selectedLog.method}</p>
-            <p><strong>Endpoint:</strong> {selectedLog.endpoint}</p>
+            <p><strong>Endpoint:</strong> {selectedLog.endpoint.replace('http://127.0.0.1:5000/', '')}</p>
             <p><strong>Status:</strong> {selectedLog.status}</p>
             <p><strong>Client IP:</strong> {selectedLog.client_ip}</p>
             <p><strong>User:</strong> {selectedLog.user}</p>
+            <p>
+              <strong>Response:</strong>{' '}
+              <span
+                className={
+                  selectedLog.status === 403 || selectedLog.status === 429
+                    ? 'response-denied'
+                    : selectedLog.status === 200
+                      ? 'response-success'
+                      : 'response-unknown'
+                }
+              >
+                {selectedLog.status === 403 || selectedLog.status === 429
+                  ? 'Access Denied'
+                  : selectedLog.status === 200
+                    ? 'Access Successful'
+                    : 'Unknown Status'}
+              </span>
+            </p>
           </div>
         </div>
       )}
+
     </div>
   );
 };
