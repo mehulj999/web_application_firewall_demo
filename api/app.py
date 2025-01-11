@@ -83,7 +83,7 @@ def handle_rate_limit_exceeded(e):
 
 @app.after_request
 def log_request_response(response):
-    skip_endpoints = ["fetch_logs", "print_routes", "register_admin", "monitoring_logs", "/profiles", "current_user" ]
+    skip_endpoints = ["fetch_logs", "print_routes", "register_admin", "monitoring_logs", "/profile", "current_user" ]
     if request.endpoint in skip_endpoints:
         return response
 
