@@ -14,6 +14,8 @@ interface Log {
 const MonitoringPage: React.FC = () => {
   const [logs, setLogs] = useState<Log[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [popupVisible, setPopupVisible] = useState(false); // State for popup visibility
+  const [selectedLog, setSelectedLog] = useState<Log | null>(null); // State for the selected log details
 
   const [dateFilter, setDateFilter] = useState<string>('today');
   const [methodFilter, setMethodFilter] = useState<string>('all-methods');
@@ -77,18 +79,27 @@ const MonitoringPage: React.FC = () => {
     }
 
     if (searchQuery) {
-    isValid =
-      isValid &&
-      (
-        (log.client_ip?.toLowerCase().includes(searchQuery) || '') ||
-        (log.endpoint?.toLowerCase().includes(searchQuery) || '') ||
-        (String(log.user || '').toLowerCase().includes(searchQuery))
-      );
+      isValid =
+        isValid &&
+        (
+          (log.client_ip?.toLowerCase().includes(searchQuery) || '') ||
+          (log.endpoint?.toLowerCase().includes(searchQuery) || '') ||
+          (String(log.user || '').toLowerCase().includes(searchQuery))
+        );
     }
-
 
     return isValid;
   });
+
+  const handleDetailsClick = (log: Log) => {
+    setSelectedLog(log); // Set the selected log details
+    setPopupVisible(true); // Show the popup
+  };
+
+  const closePopup = () => {
+    setPopupVisible(false); // Hide the popup
+    setSelectedLog(null); // Clear the selected log
+  };
 
   return (
     <div className="monitoring-main">
@@ -157,15 +168,20 @@ const MonitoringPage: React.FC = () => {
               </thead>
               <tbody>
                 {filteredLogs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).map((log, index) => (
-                  <tr key={index}>
+                  <tr
+                    key={index}
+                    className={log.status === 403 || log.status === 429 ? 'highlight-row' : ''}
+                  >
                     <td>{log.timestamp.toLocaleString()}</td>
                     <td>{log.method}</td>
-                    <td>{log.endpoint}</td>
+                    <td>{log.endpoint.replace('http://127.0.0.1:5000/', '')}</td>
                     <td>{log.status}</td>
                     <td>{log.client_ip}</td>
                     <td>{log.user}</td>
                     <td>
-                      <button className="details-button">Details</button>
+                      <button className="details-button" onClick={() => handleDetailsClick(log)}>
+                        Details
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -175,11 +191,17 @@ const MonitoringPage: React.FC = () => {
           <div className="dashboard-sidebar">
             <div className="section">
               <div className="section-title">Error Alerts</div>
-              {logs.filter(log => log.status >= 400).map((log, index) => (
-                <div className="error-alert" key={index}>
-                  <strong>Error {log.status}:</strong> {log.endpoint}
-                </div>
-              ))}
+              {logs.filter(log => log.status >= 400)
+                .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+                .map((log, index) => (
+                  <div className="error-alert" key={index}>
+                    <strong>
+                      {log.status === 403 || log.status === 429
+                        ? `Error ${log.status}: Malicious activity detected`
+                        : `Error ${log.status}`}
+                    </strong>
+                  </div>
+                ))}
             </div>
             <div className="section">
               <div className="section-title">Traffic Insights</div>
@@ -222,6 +244,24 @@ const MonitoringPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Popup */}
+      {popupVisible && selectedLog && (
+        <div className="popup-overlay" onClick={closePopup}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-popup" onClick={closePopup}>
+              &times;
+            </button>
+            <h2>Log Details</h2>
+            <p><strong>Timestamp:</strong> {selectedLog.timestamp.toLocaleString()}</p>
+            <p><strong>Method:</strong> {selectedLog.method}</p>
+            <p><strong>Endpoint:</strong> {selectedLog.endpoint}</p>
+            <p><strong>Status:</strong> {selectedLog.status}</p>
+            <p><strong>Client IP:</strong> {selectedLog.client_ip}</p>
+            <p><strong>User:</strong> {selectedLog.user}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
