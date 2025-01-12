@@ -58,7 +58,7 @@ def detect_sql_injection():
 # Attack 2 Cross-Site Scripting (XSS)
 @app.before_request
 def detect_xss():
-    if request.method in ["POST", "GET"] and "post" in request.path:
+    if request.method in ["POST", "GET"] and "post" in request.path and not "weak_post" in request.path:
         payload = request.get_data(as_text=True) or request.args.to_dict()
         xss_pattern = r"(<script.*?>.*?</script>|<.*?on\w+=['\"].*?['\"].*?>)"
         if re.search(xss_pattern, str(payload), re.IGNORECASE):
@@ -83,7 +83,7 @@ def handle_rate_limit_exceeded(e):
 
 @app.after_request
 def log_request_response(response):
-    skip_endpoints = ["fetch_logs", "print_routes", "register_admin", "monitoring_logs", "/profile", "current_user" ]
+    skip_endpoints = ["fetch_logs", "print_routes", "register_admin", "get_monitoring_logs", "manage_profile", "get_current_user" ]
     if request.endpoint in skip_endpoints:
         return response
 
@@ -256,26 +256,6 @@ def login_user():
     session["user_id"] = user.id
     response = jsonify({"id": user.id, "email": user.email, "is_admin": user.is_admin})
     return response
-
-
-# SQL INJECTION
-@app.route("/weak_login", methods=["POST"])
-def weak_login_user():
-    email = request.json.get("email")
-
-    # Define a raw SQL query explicitly with column names
-    query = text(f"SELECT id, email, is_admin FROM Users WHERE email = '{email}'")
-    result = db.session.execute(query).fetchone()
-
-    # Check if the result is None
-    if not result:
-        return jsonify({"error": "Invalid credentials"}), 401
-
-    # Access tuple indices since `fetchone` returns a tuple
-    user_id, user_email, is_admin = result
-
-    return jsonify({"id": user_id, "email": user_email, "is_admin": is_admin})
-
 
 @app.route("/logout", methods=["POST"])
 @login_required  # Protected route
@@ -593,6 +573,44 @@ def manage_profile(user_id):
         db.session.delete(profile)
         db.session.commit()
         return jsonify({"message": "Profile deleted successfully"})
+    
+## ATTACK ROUTES
+
+# SQL INJECTION
+@app.route("/weak_login", methods=["POST"])
+def weak_login_user():
+    email = request.json.get("email")
+
+    # Define a raw SQL query explicitly with column names
+    query = text(f"SELECT id, email, is_admin FROM Users WHERE email = '{email}'")
+    result = db.session.execute(query).fetchone()
+
+    # Check if the result is None
+    if not result:
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    # Access tuple indices since `fetchone` returns a tuple
+    user_id, user_email, is_admin = result
+
+    return jsonify({"id": user_id, "email": user_email, "is_admin": is_admin})
+
+# Cross Site Scripting
+@app.route("/users/<int:user_id>/weak_post", methods=["POST"])
+def create_weak_post(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    title = request.json.get("title")
+    content = request.json.get("content")
+
+    if not title or not content:
+        return jsonify({"error": "Title and content are required"}), 400
+
+    new_post = Post(user_id=user_id, title=title, content=content)
+    db.session.add(new_post)
+    db.session.commit()
+    return jsonify({"message": "Post created successfully", "post_id": new_post.id})
 
 
 # Print routes for debugging
