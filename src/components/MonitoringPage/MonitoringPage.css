@@ -275,3 +275,30 @@ body {
   .response-unknown {
     color: black;
   }
+
+.traffic-logs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px; /* Add space between the header and the table */
+}
+
+.traffic-logs-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.refresh-button {
+  padding: 8px 16px;
+  background-color: #156237;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 70px;
+}
+
+.refresh-button:hover {
+  background-color: #357ab9;
+}

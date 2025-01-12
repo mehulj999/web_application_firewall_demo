@@ -23,24 +23,29 @@ const MonitoringPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all-status');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  const fetchLogs = async () => {
+    try {
+      const response = await fetch('/monitoring_logs', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch logs');
+      const data = await response.json();
+      const parsedLogs = data.logs.map((log: any) => ({
+        ...log,
+        timestamp: new Date(log.timestamp),
+        response: log.response || '',
+      }));
+      setLogs(parsedLogs);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const response = await fetch('/monitoring_logs', { credentials: 'include' });
-        if (!response.ok) throw new Error('Failed to fetch logs');
-        const data = await response.json();
-        const parsedLogs = data.logs.map((log: any) => ({
-          ...log,
-          timestamp: new Date(log.timestamp),
-          response: log.response || '',
-        }));
-        setLogs(parsedLogs);
-      } catch (err: any) {
-        setError(err.message);
-      }
-    };
-    fetchLogs();
+    fetchLogs(); // Fetch logs on initial load
   }, []);
+
+  const handleRefreshLogs = () => {
+    fetchLogs(); // Fetch logs on button click
+  };
 
   const handleDateFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setDateFilter(event.target.value);
@@ -155,7 +160,47 @@ const MonitoringPage: React.FC = () => {
         </div>
         <div className="main">
           <div className="main-panel">
-            <h2>Traffic Logs</h2>
+            <div className="panel-header">
+              <div className="traffic-logs-header">
+                <h2>Traffic Logs</h2>
+                <button className="refresh-button" onClick={handleRefreshLogs}>
+                  Refresh
+                </button>
+              </div>
+            </div>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Method</th>
+                  <th>Endpoint</th>
+                  <th>Status</th>
+                  <th>Client IP</th>
+                  <th>User</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredLogs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).map((log, index) => (
+                  <tr
+                    key={index}
+                    className={log.status === 403 || log.status === 429 ? 'highlight-row' : ''}
+                  >
+                    <td>{log.timestamp.toLocaleString()}</td>
+                    <td>{log.method}</td>
+                    <td>{log.endpoint.replace('http://127.0.0.1:5000/', '')}</td>
+                    <td>{log.status}</td>
+                    <td>{log.client_ip}</td>
+                    <td>{log.user}</td>
+                    <td>
+                      <button className="details-button" onClick={() => handleDetailsClick(log)}>
+                        Details
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
             <table className="table">
               <thead>
                 <tr>
@@ -217,14 +262,12 @@ const MonitoringPage: React.FC = () => {
               &times;
             </button>
             <h2>Log Details</h2>
-
             {/* Malicious Activity Detected Message */}
             {(selectedLog.status === 403 || selectedLog.status === 429) && (
               <p style={{ color: 'red', fontWeight: 'bold', margin: '10px 0' }}>
                 Malicious Activity Detected
               </p>
             )}
-
             <p><strong>Timestamp:</strong> {selectedLog.timestamp.toLocaleString()}</p>
             <p><strong>Method:</strong> {selectedLog.method}</p>
             <p><strong>Endpoint:</strong> {selectedLog.endpoint.replace('http://127.0.0.1:5000/', '')}</p>
@@ -234,13 +277,11 @@ const MonitoringPage: React.FC = () => {
             <p>
               <strong>Response:</strong>{' '}
               <span
-                className={
-                  selectedLog.status === 403 || selectedLog.status === 429
-                    ? 'response-denied'
-                    : selectedLog.status === 200
-                      ? 'response-success'
-                      : 'response-unknown'
-                }
+                className={selectedLog.status === 403 || selectedLog.status === 429
+                  ? 'response-denied'
+                  : selectedLog.status === 200
+                    ? 'response-success'
+                    : 'response-unknown'}
               >
                 {selectedLog.status === 403 || selectedLog.status === 429
                   ? 'Access Denied'
@@ -252,7 +293,6 @@ const MonitoringPage: React.FC = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
