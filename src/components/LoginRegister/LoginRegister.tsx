@@ -130,7 +130,7 @@ const LoginRegister: React.FC = () => {
 
   return (
     <div className={`wrapper${action}`}>
-      {message && <p className="message">{message}</p>}
+      
       <div className="form-box login">
         <form onSubmit={handleLoginSubmit}>
           <h1>Login</h1>
@@ -163,6 +163,8 @@ const LoginRegister: React.FC = () => {
               Register
             </a>
           </p>
+          <br />
+          {message && <p className="message">{message}</p>}
         </form>
       </div>
 
@@ -244,6 +246,8 @@ const LoginRegister: React.FC = () => {
                             </a>
                         </p>
                     </div>
+                    <br />
+                    {message && <p className="message">{message}</p>}
                 </form>
       </div>
     </div>
