@@ -85,8 +85,9 @@ header .image-text .header-text{
     font-weight: 600;
 }
 
-.header-text .profession{
+.menu-bar .profession{
     margin-top: -2px;
+    color: #f4f4f9;
 }
 
 

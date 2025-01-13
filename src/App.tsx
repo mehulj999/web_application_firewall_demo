@@ -6,6 +6,7 @@ import WeakHomePage from './components/WeakHomePage/WeakHomePage'; // Import Wea
 import HomePage from './components/HomePage/HomePage'; // Import HomePage
 import { AuthProvider } from './AuthContext'; // Import AuthProvider
 import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
+import ProfilePage from './components/ProfilePage/ProfilePage';
 
 const App = () => {
   const location = useLocation();
@@ -49,7 +50,15 @@ const App = () => {
                       <WeakHomePage />
                   </ProtectedRoute>
               }
-          />       
+          /> 
+                    <Route
+              path="/profile"
+              element={
+                  <ProtectedRoute>
+                      <ProfilePage />
+                  </ProtectedRoute>
+              }
+          />        
 
       </Routes>
   );  

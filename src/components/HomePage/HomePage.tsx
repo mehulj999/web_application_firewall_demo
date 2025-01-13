@@ -57,9 +57,9 @@ class CommentArea extends Component<CommentAreaProps, CommentAreaState> {
     } catch (error) {
         console.error('Error deleting comment:', error);
     }
-};
+  };
 
-handleEdit = async (commentId: number, newContent: string) => {
+  handleEdit = async (commentId: number, newContent: string) => {
     try {
         const response = await fetch(`/posts/${commentId}`, {
             method: 'PUT',
@@ -82,7 +82,7 @@ handleEdit = async (commentId: number, newContent: string) => {
     } catch (error) {
         console.error('Error editing comment:', error);
     }
-};
+  };
 
   // Fetch comments from the backend when the component mounts
   async componentDidMount() {

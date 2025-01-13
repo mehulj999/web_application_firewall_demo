@@ -138,6 +138,7 @@ def log_request(req=None, response=None, user_id=None):
     db.session.commit()
 
 
+
 # ----------------------------
 # Flask Hooks for Logging
 # ----------------------------

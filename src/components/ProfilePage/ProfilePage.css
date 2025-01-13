@@ -1,0 +1,369 @@
+@import url('https://fonts.googleapis.com/css?family=Josefin+Sans&display=swap');
+
+/* *{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  list-style: none;
+  font-family: 'Josefin Sans', sans-serif;
+} */
+
+
+
+
+.profile-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+    position: relative;
+    background-color: #373737; /* Match your page background */
+  }
+  .info{
+    font-size: larger;
+  }
+  .card {
+    width: 20em;
+    height: 25em;
+    background: #171717;
+    transition: 1s ease-in-out;
+    clip-path: polygon(
+      30px 0%,
+      100% 0,
+      100% calc(100% - 30px),
+      calc(100% - 30px) 100%,
+      0 100%,
+      0% 30px
+    );
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    font-size: 30px;
+    /* z-index: 1; */
+  }
+
+.card span {
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  display: block;
+  font-size: 1em;
+}
+
+.card .info {
+  font-weight: 400;
+  color: white;
+  display: block;
+  text-align: center;
+  font-size: 0.72em;
+  margin: 1em;
+}
+.imgg{
+    width: 150px;
+    border-radius: 10px;
+}
+
+.card .img {
+  width: 4.8em;
+  height: 4.8em;
+  background: white;
+  border-radius: 15px;
+  margin: auto;
+}
+
+.card .share {
+  margin-top: 1em;
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+}
+
+.card a {
+  color: white;
+  transition: 0.4s ease-in-out;
+}
+
+.card a:hover {
+  color: red;
+}
+
+
+.card button:hover {
+  background: red;
+  color: white;
+  cursor: pointer;
+}
+
+
+  
+  .card span {
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    display: block;
+    font-size: 1em;
+  }
+  
+  .card .info {
+    font-weight: 400;
+    color: white;
+    display: block;
+    text-align: center;
+    font-size: 0.72em;
+    margin: 1em;
+  }
+  
+  .card .img {
+    width: 4.8em;
+    height: 4.8em;
+    background: white;
+    border-radius: 15px;
+    margin: auto;
+  }
+  
+  .card .share {
+    margin-top: 1em;
+    display: flex;
+    justify-content: center;
+    gap: 1em;
+  }
+  
+  .card a {
+    color: white;
+    transition: 0.4s ease-in-out;
+  }
+  
+  .card a:hover {
+    color: red;
+  }
+  
+  .card button {
+    padding: 0.8em 1.7em;
+    display: block;
+    margin: auto;
+    border-radius: 25px;
+    border: none;
+    font-weight: bold;
+    background: #ffffff;
+    color: rgb(0, 0, 0);
+    transition: 0.4s ease-in-out;
+  }
+  
+  .card button:hover {
+    background: red;
+    color: white;
+    cursor: pointer;
+  }
+  
+
+
+
+
+
+   /* From Uiverse.io by Admin12121 */ 
+@keyframes scaleUpDown {
+    0%, 100% {
+      transform: scaleY(1) scaleX(1);
+    }
+  
+    50%, 90% {
+      transform: scaleY(1.1);
+    }
+  
+    75% {
+      transform: scaleY(0.95);
+    }
+  
+    80% {
+      transform: scaleX(0.95);
+    }
+  }
+  
+  @keyframes shake {
+    0%, 100% {
+      transform: skewX(0) scale(1);
+    }
+  
+    50% {
+      transform: skewX(5deg) scale(0.9);
+    }
+  }
+  
+  @keyframes particleUp {
+    0% {
+      opacity: 0;
+    }
+  
+    20% {
+      opacity: 1;
+    }
+  
+    80% {
+      opacity: 1;
+    }
+  
+    100% {
+      opacity: 0;
+      top: -100%;
+      transform: scale(0.5);
+    }
+  }
+  
+  @keyframes glow {
+    0%, 100% {
+      background-color: #ef5a00;
+    }
+  
+    50% {
+      background-color: #ff7800;
+    }
+  }
+
+  
+.left{
+    position: absolute;
+    left: 200px;
+
+    width: 150px;
+    height: 100%;
+}
+.right{
+    position: absolute;
+    right: 200px;
+
+    width: 150px;
+    height: 100%;
+}
+
+
+  
+  .fire {
+    position: absolute;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
+    width: 100px;
+    height: 100px;
+    background-color: transparent;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .fire-center {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    animation: scaleUpDown 3s ease-out;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+  }
+  
+  .fire-center .main-fire {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(farthest-corner at 10px 0, #d43300 0%, #ef5a00 95%);
+    transform: scaleX(0.8) rotate(45deg);
+    border-radius: 0 40% 60% 40%;
+    filter: drop-shadow(0 0 10px #d43322);
+  }
+  
+  .fire-center .particle-fire {
+    position: absolute;
+    top: 60%;
+    left: 45%;
+    width: 10px;
+    height: 10px;
+    background-color: #ef5a00;
+    border-radius: 50%;
+    filter: drop-shadow(0 0 10px #d43322);
+    animation: particleUp 2s ease-out 0;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+  }
+  
+  .fire-right {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    animation: shake 2s ease-out 0;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+  }
+  
+  .fire-right .main-fire {
+    position: absolute;
+    top: 15%;
+    right: -25%;
+    width: 80%;
+    height: 80%;
+    background-color: #ef5a00;
+    transform: scaleX(0.8) rotate(45deg);
+    border-radius: 0 40% 60% 40%;
+    filter: drop-shadow(0 0 10px #d43322);
+  }
+  
+  .fire-right .particle-fire {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    width: 15px;
+    height: 15px;
+    background-color: #ef5a00;
+    transform: scaleX(0.8) rotate(45deg);
+    border-radius: 50%;
+    filter: drop-shadow(0 0 10px #d43322);
+    animation: particleUp 2s ease-out 0;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+  }
+  
+  .fire-left {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    animation: shake 3s ease-out 0;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+  }
+  
+  .fire-left .main-fire {
+    position: absolute;
+    top: 15%;
+    left: -20%;
+    width: 80%;
+    height: 80%;
+    background-color: #ef5a00;
+    transform: scaleX(0.8) rotate(45deg);
+    border-radius: 0 40% 60% 40%;
+    filter: drop-shadow(0 0 10px #d43322);
+  }
+  
+  .fire-left .particle-fire {
+    position: absolute;
+    top: 10%;
+    left: 20%;
+    width: 10%;
+    height: 10%;
+    background-color: #ef5a00;
+    border-radius: 50%;
+    filter: drop-shadow(0 0 10px #d43322);
+    animation: particleUp 3s infinite ease-out 0;
+    animation-fill-mode: both;
+  }
+  
+  .fire-bottom .main-fire {
+    position: absolute;
+    top: 30%;
+    left: 20%;
+    width: 75%;
+    height: 75%;
+    background-color: #ff7800;
+    transform: scaleX(0.8) rotate(45deg);
+    border-radius: 0 40% 100% 40%;
+    filter: blur(10px);
+    animation: glow 2s ease-out 0;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+  }
