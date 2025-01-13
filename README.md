@@ -89,13 +89,7 @@ cd web_application_firewall_demo
     ```bash
     pip install -r requirements.txt
     ```
-4. Initialize the database.
-    ```bash
-    python
-    >>> from db import init_db
-    >>> init_db()
-    >>> exit()
-    ```
+
 
 ### Step 3: Frontend Setup
 1. Navigate to the `parent` folder:
@@ -104,7 +98,7 @@ cd web_application_firewall_demo
    ```
 2. Install the dependencies:
    ```bash
-   npm install
+   npm install --save-dev typescript @types/react @types/react-dom
    ```
 
 ### Step 4: Start the Application
