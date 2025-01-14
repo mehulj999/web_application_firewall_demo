@@ -201,39 +201,6 @@ const MonitoringPage: React.FC = () => {
                 ))}
               </tbody>
             </table>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>Method</th>
-                  <th>Endpoint</th>
-                  <th>Status</th>
-                  <th>Client IP</th>
-                  <th>User</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLogs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).map((log, index) => (
-                  <tr
-                    key={index}
-                    className={log.status === 403 || log.status === 429 ? 'highlight-row' : ''}
-                  >
-                    <td>{log.timestamp.toLocaleString()}</td>
-                    <td>{log.method}</td>
-                    <td>{log.endpoint.replace('http://127.0.0.1:5000/', '')}</td>
-                    <td>{log.status}</td>
-                    <td>{log.client_ip}</td>
-                    <td>{log.user}</td>
-                    <td>
-                      <button className="details-button" onClick={() => handleDetailsClick(log)}>
-                        Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
           <div className="dashboard-sidebar">
             <div className="section">

@@ -50,12 +50,14 @@ const SideBar: React.FC<SideBarProps> = ({ children }) => {
 
             <div className="text header-text">
               <span className="name">{profile?.name || "Firewall"}</span>
-              <span className="profession">{user?.email || "User"}</span>
+              
             </div>
+            
           </div>
         </header>
 
         <div className="menu-bar">
+        <span className="profession">{user?.email || "User"}</span>
           <div className="menu">
             <ul className="menu-links">
               <li className="nav-link">
