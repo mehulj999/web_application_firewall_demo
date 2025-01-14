@@ -10,8 +10,8 @@ interface Log {
   client_ip: string;
   user: string;
   response?: string;
+  response_object?: string; // Ensure this field is optional in the interface
 }
-
 const MonitoringPage: React.FC = () => {
   const [logs, setLogs] = useState<Log[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -32,8 +32,10 @@ const MonitoringPage: React.FC = () => {
         ...log,
         timestamp: new Date(log.timestamp),
         response: log.response || '',
+        response_object: log.response_object || '', // Handle response_body properly
       }));
       setLogs(parsedLogs);
+      console.log("PARSED LOG", parsedLogs)
     } catch (err: any) {
       setError(err.message);
     }
@@ -241,6 +243,14 @@ const MonitoringPage: React.FC = () => {
             <p><strong>Status:</strong> {selectedLog.status}</p>
             <p><strong>Client IP:</strong> {selectedLog.client_ip}</p>
             <p><strong>User:</strong> {selectedLog.user}</p>
+            <p>
+              <strong>Response Body:</strong>{' '}
+              {selectedLog.response_object ? (
+                <pre>{selectedLog.response_object}</pre> // Use <pre> for better formatting
+              ) : (
+                'No response body available'
+              )}
+            </p>
             <p>
               <strong>Response:</strong>{' '}
               <span
