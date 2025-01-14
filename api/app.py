@@ -461,6 +461,7 @@ def get_monitoring_logs():
             "status": log.response_status,
             "client_ip": log.request_ip,
             "user": log.user_id or "unknown",  # Assuming user_id maps to a user
+            "response_object": log.response_object,
         }
         for log in logs
     ]
