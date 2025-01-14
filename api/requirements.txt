@@ -7,3 +7,4 @@ redis
 flask-cors
 flask_migrate
 flask_limiter
+requests
